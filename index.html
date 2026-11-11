@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SIGNION Partner</title>
 <link rel="icon" href="assets/logo-sym.svg" type="image/svg+xml">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<link rel="preload" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"></noscript>
 <style>
 /* ============================================================
    SIGNION Design Tokens — BI Guidelines BS 3-1 / BS 5-1 기준
@@ -38,6 +41,7 @@
 .on-black .logo path[fill="#0063ff"]{fill:#fff} .on-black .logo path[fill="#ffffff"]{fill:#000} .on-black .logo image{filter:brightness(0) invert(1)}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;font-size:14px;line-height:1.5;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
 a{color:var(--brand);text-decoration:none}
@@ -481,6 +485,207 @@ button.gsearch span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:elli
   .app.mini .sb-fold .i{transform:scaleX(-1)}
 }
 
+/* ---------- Datepicker ---------- */
+.dp{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dp:hover{border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}
+.dp[aria-expanded="true"]{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 18%,transparent)}
+.dp>.i{width:16px;height:16px;color:var(--brand)} .dp .dn{color:var(--muted);font-size:12px} .dp .chev{width:14px;height:14px;color:var(--muted)}
+.dpop{position:fixed;z-index:120;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);display:none;overflow:hidden;max-width:calc(100vw - 24px)}
+.dpop.on{display:flex;flex-direction:column}
+.dp-body{display:flex}
+.dp-pre{display:flex;flex-direction:column;gap:2px;padding:12px 8px;border-right:1px solid var(--line-2);min-width:132px}
+.dp-pre .t{font-size:11px;font-weight:700;color:var(--muted);padding:4px 10px 6px;letter-spacing:.04em}
+.dp-pre button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.dp-pre button:hover{background:var(--surface-2);color:var(--ink)} .dp-pre button.on{background:var(--brand-50);color:var(--brand);font-weight:600}
+.dp-cals{padding:12px 16px 6px;position:relative}
+.dp-nav{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}
+.dp-nav button{pointer-events:auto;width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:none;cursor:pointer;display:grid;place-items:center;color:var(--ink-2)}
+.dp-nav button:hover:not(:disabled){background:var(--surface-2);border-color:var(--line)} .dp-nav button:disabled{opacity:.25;cursor:default}
+.dp-nav .i{width:16px;height:16px}
+.dp-months{display:flex;gap:24px}
+.cal{width:252px}
+.cal-t{text-align:center;font-weight:700;font-size:14px;height:30px;line-height:30px;margin-bottom:4px}
+.cal-w,.cal-g{display:grid;grid-template-columns:repeat(7,36px)}
+.cal-w span{text-align:center;font-size:11.5px;color:var(--muted);height:26px;line-height:26px;font-weight:600}
+.cal-w span:first-child{color:var(--bad)}
+.cal-g .d{height:36px;border:0;background:none;cursor:pointer;font:inherit;font-size:13px;color:var(--ink);padding:0;font-variant-numeric:tabular-nums}
+.cal-g .d span{display:grid;place-items:center;width:34px;height:34px;margin:auto;border-radius:50%}
+.cal-g .d:hover:not(:disabled) span{background:var(--surface-2)}
+.cal-g .d:focus-visible{outline:none} .cal-g .d:focus-visible span{box-shadow:0 0 0 2px var(--brand)}
+.cal-g .d.sun{color:var(--bad)}
+.cal-g .d.today span{box-shadow:inset 0 0 0 1.5px var(--brand);font-weight:700}
+.cal-g .d.in{background:var(--brand-50)}
+.cal-g .d.rs{background:linear-gradient(90deg,transparent 50%,var(--brand-50) 50%)}
+.cal-g .d.re{background:linear-gradient(90deg,var(--brand-50) 50%,transparent 50%)}
+.cal-g .d.rs.re{background:none}
+.cal-g .d.rs span,.cal-g .d.re span{background:var(--brand)!important;color:#fff;font-weight:700}
+.cal-g .d:disabled{color:color-mix(in srgb,var(--muted) 45%,transparent);cursor:default}
+.cal-g .d.pilot:not(.rs):not(.re) span::after{content:"";display:block}
+.cal-g .out{visibility:hidden}
+.dp-foot{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--line-2);flex-wrap:wrap;background:var(--surface-2)}
+.dp-foot .input{width:118px;height:32px;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:12.5px;text-align:center}
+.dp-foot .input.err{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-bg)}
+.dp-foot .sp{flex:1}
+.dp-foot .hint{font-size:12px;color:var(--muted)}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:6px 4px 10px;width:260px}
+.mgrid button{height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font:inherit;font-size:13.5px;color:var(--ink)}
+.mgrid button:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+.mgrid button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.mgrid button:disabled{opacity:.35;cursor:default}
+@media(max-width:640px){.dp-pre{display:none}}
+.dp.empty>span:first-of-type{color:var(--ink-2)}
+.dp-foot .btn-ghost{color:var(--ink-2)}
+
+/* ---------- 검색 조건 패널 (다중검색) ---------- */
+.sp{border-bottom:1px solid var(--line-2);background:var(--surface-2);border-radius:12px 12px 0 0}
+.sp-h{display:flex;align-items:center;gap:8px;padding:12px 16px;flex-wrap:wrap}
+.sp-h>.i{width:16px;height:16px;color:var(--brand)}
+.sp-h b{font-size:14px}
+.sp-h .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.sp-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 14px;padding:0 16px 12px;align-items:end}
+.sp-g .fld label{font-size:12px}
+.sp-g .wide{grid-column:span 2}
+.sp-g .csel,.sp-g .dp,.sp-g .input{width:100%}
+.sp-g .dp .chev,.fld .dp .chev{margin-left:auto}
+@media(max-width:720px){.sp-g .wide{grid-column:auto}}
+.qbox{display:flex;gap:6px} .qbox .csel{flex:none;width:132px} .qbox .input{flex:1;min-width:0;width:auto}
+.sp-f{display:flex;gap:8px;align-items:center;padding:0 16px 14px;flex-wrap:wrap}
+.sp-f .grow{flex:1}
+.sp-f kbd{margin-left:4px;background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);color:#fff}
+.dirty-dot{display:none;width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-left:2px;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+.btn.dirty .dirty-dot{display:inline-block}
+.dirty-t{font-size:12.5px;color:var(--warn);display:inline-flex;align-items:center;gap:5px}
+.dirty-t .i{width:14px;height:14px}
+.tb2{display:flex;align-items:center;gap:8px;padding:10px 16px;flex-wrap:wrap;border-bottom:1px solid var(--line-2)}
+.tb2 .grow{flex:1}
+.res-n{font-size:13.5px;color:var(--ink-2)} .res-n b{font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
+.qtime{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.saved-i{display:flex;align-items:center;gap:4px}
+.saved-i .dd-i{flex:1}
+.saved-i .x{border:0;background:none;cursor:pointer;color:var(--muted);width:28px;height:28px;border-radius:6px;display:grid;place-items:center}
+.saved-i .x:hover{color:var(--bad);background:var(--bad-bg)} .saved-i .x .i{width:14px;height:14px}
+/* 그리드 */
+.tbl-wrap.scroll{max-height:calc(100vh - 210px);overflow:auto}
+.tbl thead th{position:sticky;top:0;z-index:2}
+.tbl.compact td{padding:6px 12px;font-size:13px} .tbl.compact th{padding:7px 12px}
+.tbl tfoot.sum td{position:sticky;bottom:0;background:var(--surface-2);border-top:1px solid var(--line);font-weight:700;z-index:1;border-bottom:0}
+.colset{max-height:340px;overflow:auto;min-width:230px}
+.colset label{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:13.5px;cursor:pointer}
+.colset label:hover{background:var(--surface-2)}
+.colset .cbox:disabled+span{color:var(--muted)}
+/* 입력 폼 */
+.fld .err-t{font-size:12px;color:var(--bad);margin-top:5px;display:none}
+.fld.err .input,.fld.err .csel,.fld.err .dp{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-bg)}
+.fld.err .err-t{display:block}
+.m-warn{margin-right:auto;font-size:12.5px;color:var(--warn);display:flex;align-items:center;gap:6px}
+.m-warn .i{width:15px;height:15px}
+.m-f kbd{margin-left:6px;background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);color:#fff}
+.kbd-l{display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:13.5px;align-items:center}
+.kbd-l kbd{justify-self:start;font-size:12px;padding:2px 8px}
+.modal.xwide{width:min(1120px,calc(100vw - 32px))}
+/* 리포트 */
+.rpt{background:#fff;color:#111;border:1px solid #dde3ec;border-radius:6px;padding:26px 30px;font-size:12px;position:relative;overflow:hidden;font-family:Pretendard,"Malgun Gothic",sans-serif}
+.rpt-h{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px}
+.rpt-h h2{margin:2px 0 0;font-size:20px} .rpt-h .logo{width:108px}
+.rpt-k{font-size:10.5px;color:#666;letter-spacing:.1em;font-weight:700}
+.rpt-meta{display:grid;grid-template-columns:72px 1fr 72px 1fr;gap:4px 12px;font-size:11.5px;margin-bottom:12px;color:#555}
+.rpt-meta b{color:#111;font-weight:600}
+.rpt table{width:100%;border-collapse:collapse;font-size:11px}
+.rpt th,.rpt td{border:1px solid #cfd5df;padding:5px 6px;text-align:left;white-space:nowrap}
+.rpt th{background:#f1f4f8;font-weight:700}
+.rpt td.n,.rpt th.n{text-align:right;font-variant-numeric:tabular-nums}
+.rpt tfoot td{font-weight:700;background:#f7f9fc}
+.rpt-f{display:flex;justify-content:space-between;gap:12px;margin-top:12px;font-size:10.5px;color:#666}
+.rpt-wm{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-size:46px;font-weight:800;color:rgba(0,0,0,.045);transform:rotate(-22deg);white-space:nowrap}
+.rpt-scroll{max-height:62vh;overflow:auto;background:var(--surface-2);padding:14px;border-radius:10px;border:1px solid var(--line)}
+#rpt-print{display:none}
+@media print{
+  body.printing>*:not(#rpt-print){display:none!important}
+  body.printing #rpt-print{display:block}
+  body.printing{background:#fff}
+  #rpt-print .rpt{border:0;padding:0}
+  #rpt-print .rpt-wm{position:fixed}
+  #rpt-print thead{display:table-header-group}
+  @page{size:A4 landscape;margin:12mm}
+}
+/* 세션 */
+.sess{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);height:30px;padding:0 10px;border:1px solid var(--line);border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums;background:none;cursor:pointer;font-family:inherit}
+.sess .i{width:14px;height:14px}
+.sess:hover{border-color:var(--brand);color:var(--brand)}
+.sess.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:var(--warn-bg)}
+.sess-warn{position:fixed;inset:0;z-index:140;display:grid;place-items:center;background:rgba(8,13,22,.55);padding:16px}
+.sess-warn>div{background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);padding:26px 24px 20px;width:min(420px,100%);text-align:center}
+.sess-warn h3{margin:0;font-size:17px}
+.sess-warn p{margin:6px 0 0;color:var(--ink-2);font-size:13.5px}
+.sess-warn .big{font-size:44px;font-weight:800;color:var(--warn);font-variant-numeric:tabular-nums;margin:10px 0 14px}
+.sess-warn .row{display:flex;gap:8px;justify-content:center}
+
+/* ---------- 행 펼쳐 보기 ---------- */
+.tbl tr.peek-tr>td{padding:0 0 4px;background:var(--surface)!important;border-bottom:1px solid var(--line);cursor:default}
+.tbl tbody tr.peek-tr:hover td{background:var(--surface)!important}
+.peek{position:sticky;left:48px;width:calc(100cqi - 64px);max-width:1180px;margin:2px 0 10px;border:1px solid color-mix(in srgb,var(--brand) 28%,var(--line));border-radius:12px;background:var(--surface);box-shadow:0 6px 20px -8px rgba(16,24,40,.18);white-space:normal;overflow:hidden;animation:peekIn .16s ease-out}
+.lst .tbl-wrap{container-type:inline-size}
+.peek::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#00E0FF,#0063FF)}
+@keyframes peekIn{from{opacity:0;transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.peek{animation:none}}
+.peek-h{display:flex;align-items:center;gap:6px 12px;padding:14px 16px 8px 20px;flex-wrap:wrap}
+.peek-t{font-weight:700;font-size:15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.peek-s{color:var(--ink-2);font-size:12.5px}
+.peek-h .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.peek-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;padding:6px 20px 16px}
+.pk{min-width:0}
+.pk>span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px;font-weight:600}
+.pk b{display:block;font-weight:500;font-size:13.5px;overflow-wrap:anywhere}
+.pk .sub{display:block}
+.pk b .chips{flex-wrap:wrap}
+.peek-f{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 16px 10px 20px;border-top:1px solid var(--line-2);background:var(--surface-2)}
+.peek-f .sp{flex:1}
+.tbl tr.open>td{background:var(--brand-50)!important;border-bottom-color:transparent}
+.tbl tbody tr[data-act="open"]{scroll-margin-top:60px}
+/* ---------- 분할 보기 (목록 + 상세) — 사용 안 함 ---------- */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(400px,40%)}
+.split-l{min-width:0;border-right:1px solid var(--line-2)}
+.split-d{display:flex;flex-direction:column;min-width:0;max-height:calc(100vh - 150px);position:sticky;top:calc(var(--top) + 8px);align-self:start;background:var(--surface);border-radius:0 0 12px 0}
+.split-d .dr-h{padding:16px 18px 12px} .split-d .dr-h h2{font-size:16px}
+.split-d .dr-b{padding:16px 18px 20px;overflow:auto;flex:1}
+.split-d .dr-f{padding:12px 18px;border-radius:0 0 12px 0}
+.split-d .kv{grid-template-columns:110px minmax(0,1fr)}
+.split-d .kv2{grid-template-columns:1fr}
+.split-empty{display:grid;place-items:center;gap:8px;text-align:center;color:var(--muted);padding:80px 20px;font-size:13.5px}
+.split-empty .i{width:28px;height:28px}
+.tbl tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
+@media(max-width:1199px){.split{grid-template-columns:minmax(0,1fr)}.split-d,.split-tg{display:none}.split-l{border-right:0}}
+.preview-bar{margin-bottom:16px;align-items:center}
+.preview-bar .btn{margin-left:auto;flex:none}
+/* ---------- 권한관리 ---------- */
+.role-grid{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:1000px){.role-grid{grid-template-columns:1fr}}
+.role-list{padding:8px;display:grid;gap:4px}
+.role-i{display:grid;gap:2px;text-align:left;padding:12px;border-radius:10px;border:1px solid transparent;background:none;cursor:pointer;font:inherit;color:var(--ink)}
+.role-i:hover{background:var(--surface-2)}
+.role-i.on{background:var(--brand-50);border-color:color-mix(in srgb,var(--brand) 35%,transparent)}
+.role-i .nm{font-weight:700;font-size:14px;display:flex;gap:6px;align-items:center}
+.role-i .ds{font-size:12.5px;color:var(--ink-2)}
+.role-i .ct{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-top:2px}
+.role-i .ct .i{width:13px;height:13px}
+.ptbl th.pc,.ptbl td.pc{text-align:center;width:74px;padding-left:6px;padding-right:6px}
+.ptbl th .linkbtn{color:var(--ink-2);font-size:12.5px;font-weight:600}
+.ptbl th .linkbtn:hover{color:var(--brand)}
+.ptbl td.na{color:var(--line)}
+.ptbl tbody tr{cursor:default}
+.ptbl tr.pg td{background:var(--surface-2);font-weight:700;padding-top:9px;padding-bottom:9px}
+.ptbl .pg-t{display:inline-flex;align-items:center;gap:8px}
+.ptbl .pg-t .i{width:16px;height:16px;color:var(--brand)}
+.ptbl td.pm{min-width:180px}
+.ptbl td.pb .btn b{color:var(--brand)}
+.ptbl tr.off td{opacity:.5}
+.ptbl tr.pbtns td{background:var(--brand-50);padding-top:8px;padding-bottom:10px}
+.pchips{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px 0 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:13px;cursor:pointer}
+.pchip.on{border-color:color-mix(in srgb,var(--brand) 45%,transparent);color:var(--brand);font-weight:600}
+.tbl tr.off td{color:var(--muted)}
+.tbl tr.psub td{background:var(--surface-2);font-size:13px}
+
 /* ---------- Custom select (네이티브 select → BI 드롭다운) ---------- */
 .csel-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0;pointer-events:none;margin:0!important;padding:0!important}
 .csel{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;cursor:pointer;text-align:left;min-width:0;max-width:100%;transition:border-color .15s,box-shadow .15s;vertical-align:middle}
@@ -602,54 +807,37 @@ button.gsearch span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:elli
 @media(max-width:1100px){.g3{grid-template-columns:1fr}}
 .chart .bar.we{opacity:.45}
 
-/* ---------- Datepicker ---------- */
-.dp{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
-.dp:hover{border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}
-.dp[aria-expanded="true"]{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 18%,transparent)}
-.dp>.i{width:16px;height:16px;color:var(--brand)} .dp .dn{color:var(--muted);font-size:12px} .dp .chev{width:14px;height:14px;color:var(--muted)}
-.dpop{position:fixed;z-index:120;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);display:none;overflow:hidden;max-width:calc(100vw - 24px)}
-.dpop.on{display:flex;flex-direction:column}
-.dp-body{display:flex}
-.dp-pre{display:flex;flex-direction:column;gap:2px;padding:12px 8px;border-right:1px solid var(--line-2);min-width:132px}
-.dp-pre .t{font-size:11px;font-weight:700;color:var(--muted);padding:4px 10px 6px;letter-spacing:.04em}
-.dp-pre button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink-2);white-space:nowrap}
-.dp-pre button:hover{background:var(--surface-2);color:var(--ink)} .dp-pre button.on{background:var(--brand-50);color:var(--brand);font-weight:600}
-.dp-cals{padding:12px 16px 6px;position:relative}
-.dp-nav{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}
-.dp-nav button{pointer-events:auto;width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:none;cursor:pointer;display:grid;place-items:center;color:var(--ink-2)}
-.dp-nav button:hover:not(:disabled){background:var(--surface-2);border-color:var(--line)} .dp-nav button:disabled{opacity:.25;cursor:default}
-.dp-nav .i{width:16px;height:16px}
-.dp-months{display:flex;gap:24px}
-.cal{width:252px}
-.cal-t{text-align:center;font-weight:700;font-size:14px;height:30px;line-height:30px;margin-bottom:4px}
-.cal-w,.cal-g{display:grid;grid-template-columns:repeat(7,36px)}
-.cal-w span{text-align:center;font-size:11.5px;color:var(--muted);height:26px;line-height:26px;font-weight:600}
-.cal-w span:first-child{color:var(--bad)}
-.cal-g .d{height:36px;border:0;background:none;cursor:pointer;font:inherit;font-size:13px;color:var(--ink);padding:0;font-variant-numeric:tabular-nums}
-.cal-g .d span{display:grid;place-items:center;width:34px;height:34px;margin:auto;border-radius:50%}
-.cal-g .d:hover:not(:disabled) span{background:var(--surface-2)}
-.cal-g .d:focus-visible{outline:none} .cal-g .d:focus-visible span{box-shadow:0 0 0 2px var(--brand)}
-.cal-g .d.sun{color:var(--bad)}
-.cal-g .d.today span{box-shadow:inset 0 0 0 1.5px var(--brand);font-weight:700}
-.cal-g .d.in{background:var(--brand-50)}
-.cal-g .d.rs{background:linear-gradient(90deg,transparent 50%,var(--brand-50) 50%)}
-.cal-g .d.re{background:linear-gradient(90deg,var(--brand-50) 50%,transparent 50%)}
-.cal-g .d.rs.re{background:none}
-.cal-g .d.rs span,.cal-g .d.re span{background:var(--brand)!important;color:#fff;font-weight:700}
-.cal-g .d:disabled{color:color-mix(in srgb,var(--muted) 45%,transparent);cursor:default}
-.cal-g .d.pilot:not(.rs):not(.re) span::after{content:"";display:block}
-.cal-g .out{visibility:hidden}
-.dp-foot{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--line-2);flex-wrap:wrap;background:var(--surface-2)}
-.dp-foot .input{width:118px;height:32px;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:12.5px;text-align:center}
-.dp-foot .input.err{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-bg)}
-.dp-foot .sp{flex:1}
-.dp-foot .hint{font-size:12px;color:var(--muted)}
-.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:6px 4px 10px;width:260px}
-.mgrid button{height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font:inherit;font-size:13.5px;color:var(--ink)}
-.mgrid button:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
-.mgrid button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
-.mgrid button:disabled{opacity:.35;cursor:default}
-@media(max-width:640px){.dp-pre{display:none}}
+/* ---------- v0.2 이용량 · 과금 (KT 통합 Admin 정책) ---------- */
+.meter{display:grid;gap:8px}
+.meter .mt{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--ink-2)}
+.meter .mt b{font-size:22px;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.meter .mt .r{margin-left:auto;font-variant-numeric:tabular-nums}
+.meter .trk{height:10px;border-radius:999px;background:var(--line-2);overflow:hidden;position:relative}
+.meter .trk i{display:block;height:100%;border-radius:999px;background:var(--brand)}
+.meter.warn .trk i{background:var(--warn)} .meter.bad .trk i{background:var(--bad)}
+.meter .trk .mk{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink-2);opacity:.35}
+.meter .ms{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.meter .ms b{color:var(--ink-2);font-weight:600;font-variant-numeric:tabular-nums}
+.banner{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px 16px;border-radius:10px;font-size:13.5px;line-height:1.5}
+.banner .i{width:18px;height:18px;flex:none}
+.banner.warn{background:var(--warn-bg);color:var(--warn)} .banner.bad{background:var(--bad-bg);color:var(--bad)} .banner.info{background:var(--info-bg);color:var(--info)}
+.banner .grow{flex:1}
+.banner .btn{flex:none}
+.stmt td.g{color:var(--muted);font-size:12.5px}
+.stmt tr.tot td{font-weight:700;background:var(--surface-2)}
+.stmt tr.grand td{font-size:15px;color:var(--brand)}
+.stmt .note{white-space:normal;min-width:220px;color:var(--ink-2);font-size:12.5px}
+.ro-tag{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--neutral-bg);color:var(--ink-2)}
+.ro-tag .i{width:12px;height:12px}
+.paid-t{display:inline-flex;height:20px;align-items:center;padding:0 7px;border-radius:4px;font-size:11.5px;font-weight:700;background:var(--warn-bg);color:var(--warn)}
+.basic-t{display:inline-flex;height:20px;align-items:center;padding:0 7px;border-radius:4px;font-size:11.5px;font-weight:600;background:var(--neutral-bg);color:var(--ink-2)}
+.notice-box{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface-2);font-size:13.5px;line-height:1.7}
+.fail-box{border:1px solid color-mix(in srgb,var(--bad) 30%,var(--line));border-radius:10px;overflow:hidden;margin-bottom:14px}
+.fail-box .fh{display:flex;gap:10px;align-items:center;padding:10px 14px;background:var(--bad-bg);color:var(--bad);font-weight:700;font-size:13.5px}
+.fail-box .fh .i{width:18px;height:18px}
+.fail-box dl{padding:12px 14px;margin:0}
+.lim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:16px}
+
 </style>
 </head>
 <body>
@@ -729,6 +917,7 @@ const IC = {
   memo:'<path d="M5 3h14v18l-7-4-7 4z"/>',
   history:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
   sortv:'<path d="M8 9l4-4 4 4M8 15l4 4 4-4"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6M12 17v.01"/>',
   fold:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M16 10l-2 2 2 2"/>',
 };
 Object.assign(IC, {
@@ -771,10 +960,10 @@ function scaleInts(arr, total) {
    ===================================================================== */
 const TODAY = '2026-11-03', PILOT = '2026-10-19', DP_MIN = '2025-11-03';
 const ROLES = {
-  head:   { scope:'kt',    tier:0, label:'헤드마스터', range:'KT 전체 (마스터 2 · 총괄 3 · 영업소 6)' },
-  master: { scope:'hi',    tier:1, label:'마스터',     range:'현대인피니티 하위 (총괄 2 · 영업소 5)' },
-  general:{ scope:'vn',    tier:2, label:'총괄',       range:'베트남 총괄 하위 (영업소 3)' },
-  sub:    { scope:'vn-hn', tier:3, label:'서브',       range:'이 계정이 등록한 고객' },
+  head:   { scope:'kt',    tier:0, label:'헤드마스터', range:'KT 전체 대리점 (마스터 2 · 총괄 3 · 영업소 6)' },
+  master: { scope:'hi',    tier:1, label:'마스터',     range:'현대인피니티(대리점) 전체 고객' },
+  general:{ scope:'vn',    tier:2, label:'총괄',       range:'본인 및 소속 서브 담당 고객 (베트남 총괄 · 영업소 3)' },
+  sub:    { scope:'vn-hn', tier:3, label:'서브',       range:'본인 담당 고객' },
 };
 const ME = {
   head:   { id:'kt-ops01',  name:'한지수',          org:'KT 외국인개통팀',   ip:'121.140.33.9',  mail:'h•••••@kt.example' },
@@ -799,14 +988,61 @@ const STATS = {
   hi:{ tries:701, ok:652, pipe:[29,44,50,58,471], fails:[16,13,7,4,9], visa:[133,519,104], kids:[['베트남 총괄 사무소','총괄',428,399,18,'vn'],['네팔 총괄 사무소','총괄',273,253,11,'np']] },
   vn:{ tries:428, ok:399, pipe:[18,27,31,35,288], fails:[9,8,4,2,6], visa:[81,318,64], kids:[['하노이 영업소','서브',164,152,7,'vn-hn'],['호찌민 영업소','서브',158,147,6,'vn-hcm'],['다낭 영업소','서브',106,100,5,'vn-dn']] },
   'vn-hn':{ tries:164, ok:152, pipe:[7,11,12,14,108], fails:[4,3,2,1,2], visa:[31,121,24], kids:[['vn-hn-01 · Pham Thi Thu','서브',92,86,4,'vn-hn'],['vn-hn-02 · Dang Van Long','서브',48,44,2,'vn-hn'],['vn-hn-03 · Bui Thi Ngoc','서브',24,22,1,'vn-hn']] },
+  /* 서브는 본인 담당 고객만 — 계정 단위 집계 */
+  'vn-hn-01':{ tries:92, ok:86, pipe:[4,6,7,8,61], fails:[2,2,1,0,1], visa:[17,69,13], kids:[['vn-hn-01 · Pham Thi Thu (본인)','서브',92,86,4,'vn-hn']] },
 };
+/* 실패 사유 — 오류코드 기준. bill: 인증 결과가 산출된 건(성공·실패 모두 과금 대상) / 결과 미산출 요청은 제외 */
+const FAIL_CODE = {
+  OCR_008: { t:'여권 인식 실패', why:'여권 MRZ · 사진 영역을 읽지 못했습니다 (빛 반사 · 흔들림 · 일부 가려짐).', how:'여권 전체가 화면 안에 들어오도록 밝은 곳에서 다시 촬영하세요.', bill:true },
+  FACE_008:{ t:'안면 불일치', why:'여권 사진과 실시간 얼굴의 일치 점수가 기준(80) 미만입니다.', how:'본인 여부를 다시 확인한 뒤 정면 · 무표정으로 재인증하세요.', bill:true },
+  LIV_003: { t:'라이브니스 실패', why:'제한 시간 안에 실제 얼굴(생체) 여부를 확인하지 못했습니다.', how:'모자 · 마스크를 벗고 화면 안내에 따라 다시 진행하세요.', bill:true },
+  USR_001: { t:'고객 중도 이탈', why:'고객이 인증 화면을 종료해 결과가 산출되지 않았습니다.', how:'고객에게 처음부터 다시 진행하도록 안내하세요.', bill:false },
+  NET_001: { t:'통신 오류', why:'SIGNION 서버와의 통신이 끊겨 결과가 산출되지 않았습니다.', how:'네트워크 상태를 확인하고 다시 시도하세요. 반복되면 KT 담당자에게 문의하세요.', bill:false },
+};
+
+/* =====================================================================
+   대리점(계약 단위) — 내부 어드민(로드시스템)에서 대리점 ID별로 설정 → 여기서는 읽기 전용
+   금액 · 한도는 모두 설정값에서 읽음 (고정 금액 구현 금지)
+   ===================================================================== */
+const CUR_M = TODAY.slice(0, 7);
+const AG = {
+  hi:{ id:'hi', code:'AG-0001', name:'현대인피니티', term:['2026-10-19','2027-10-18'], base:400000, unit:1100, min:400000,
+       basic:{ master:1, general:1, sub:7 }, extra:{ general:100000, sub:50000 }, docLimit:3000, storGB:50, pack:{ price:150000, docs:1000, gb:20 }, updated:'2026-10-15 10:20 · KT 내부 어드민' },
+  gb:{ id:'gb', code:'AG-0002', name:'해외대리점 B', term:['2026-10-19','2027-04-18'], base:300000, unit:1200, min:300000,
+       basic:{ master:1, general:1, sub:3 }, extra:{ general:100000, sub:50000 }, docLimit:1000, storGB:20, pack:{ price:120000, docs:500, gb:10 }, updated:'2026-10-15 10:24 · KT 내부 어드민' },
+};
+/* 문서 처리 건수 (성공한 업로드 · 재업로드 · 다운로드만 1건씩, 목록 조회 제외) · 현재 동시 보관 용량(GB) */
+const USE = {
+  hi:{ '2026-10':{ up:1688, reup:121, dl:1544 }, '2026-11':{ up:1412, reup:96, dl:1385 }, stor:45.62 },
+  gb:{ '2026-10':{ up:402, reup:18, dl:377 }, '2026-11':{ up:212, reup:9, dl:198 }, stor:6.84 },
+};
+/* 청구 대상 여권인증 건수 (정상적으로 결과가 산출된 건 — 성공 · 실패 모두) */
+const AUTHN = { hi:{ '2026-10':531, '2026-11':112 }, gb:{ '2026-10':155, '2026-11':38 } };
+/* 확장팩 — 마스터 신청 즉시 적용 · 신청 월 전액 과금 · 승인 절차 없음 */
+const PACKS = [{ ag:'hi', m:'2026-10', qty:1, at:'2026-10-28 14:20', by:'hi-master', docs:1000, gb:20, price:150000, need:1 }];
+/* 유료 추가 계정 — 월별 최초 실제 이용(고객정보 · 문서 조회 · 처리) 기록. 계정 삭제 후에도 유지 */
+const USE_LOG = [
+  { acct:'np-gm', lv:'general', ag:'hi', m:'2026-10', at:'2026-10-20 09:14', what:'고객 상세 조회' },
+  { acct:'np-ktm-02', lv:'sub', ag:'hi', m:'2026-10', at:'2026-10-19 15:02', what:'서류 업로드' },
+  { acct:'np-pkr-01', lv:'sub', ag:'hi', m:'2026-10', at:'2026-10-22 11:40', what:'고객 상세 조회' },
+  { acct:'np-gm', lv:'general', ag:'hi', m:'2026-11', at:'2026-11-01 09:05', what:'고객 상세 조회' },
+  { acct:'np-ktm-02', lv:'sub', ag:'hi', m:'2026-11', at:'2026-11-02 14:22', what:'서류 다운로드' },
+];
+/* 처리 이벤트 (과금 근거 · 문서 원본/여권정보는 기록하지 않음) */
+const UEV = [
+  { at:'2026-11-03 13:47', ag:'hi', kind:'업로드', who:'vn-hn-01', target:'TX-1103-0418 · 법정대리인 동의서', mb:1.4 },
+  { at:'2026-11-03 11:15', ag:'hi', kind:'다운로드', who:'np-ktm-01', target:'TX-1103-0397 · 제출서류 PDF', mb:0 },
+  { at:'2026-11-02 10:31', ag:'gb', kind:'삭제', who:'mn-ub-02', target:'TX-1101-0312 · 개통 완료 자동 삭제', mb:-6.2 },
+  { at:'2026-11-01 18:05', ag:'hi', kind:'삭제', who:'vn-hn-02', target:'TX-1031-0288 · 개통 완료 자동 삭제', mb:-5.8 },
+];
+const STMT_STATE = { '2026-10':{ st:'확정', at:'2026-11-02 10:00', fix:[] }, '2026-11':{ st:'집계 중', at:'', fix:[] } };
 const DAYS = Array.from({ length:16 }, (_, i) => addD(PILOT, i));
 const DAILY = [41,55,62,66,70,38,21,68,74,77,79,81,44,23,80,33];
 const STAGES = ['검수 대기','서류 보완','발급 대기','개통 대기','개통 완료 · 삭제'];
 const STAGE_HINT = ['원본 대조 필요','필수 서류 미등록','PDF 발급 전','KT 개통 처리 중','개인정보 삭제됨'];
 const FAILS = ['여권 OCR','안면 불일치','라이브니스','통신 · 기타','중도 이탈'];
 const FAIL_MSG = { OCR_008:'여권 인식 실패 — 여권 전체가 보이도록 다시 촬영', FACE_008:'안면 불일치 — 일치 점수 80 미만', LIV_003:'라이브니스 실패 — 제한 시간 내 얼굴 확인 불가', USR_001:'고객 중도 이탈 — 인증 화면 종료', NET_001:'통신 오류' };
-const TONE = { '검수 대기':'warn','서류 보완':'bad','발급 대기':'info','개통 대기':'ok','개통 완료 · 삭제':'','인증 실패':'bad','인증 진행 중':'info','정상':'ok','잠금':'bad','휴면':'' };
+const TONE = { '검수 대기':'warn','서류 보완':'bad','발급 대기':'info','개통 대기':'ok','개통 완료 · 삭제':'','인증 실패':'bad','인증 진행 중':'info','정상':'ok','잠금':'bad','휴면':'','중지':'warn' };
 const TONE_IC = { ok:'check', warn:'alert', bad:'x', info:'clock' };
 const badge = (v, t) => { const tone = t ?? TONE[v] ?? ''; return `<span class="badge ${tone ? 't-' + tone : ''}">${tone ? ic(TONE_IC[tone]) : ''}${esc(v)}</span>`; };
 const tierB = lv => `<span class="tier tier-${LV_TIER[lv]}">${LV[lv]}</span>`;
@@ -893,7 +1129,9 @@ const ACCTS = [
  ['np-pkr-01','Hari Poudel','sub','np-pkr','포카라 영업소','휴면','10-31 11:03',106,'h.poudel@np-agency.example'],
  ['mn-ub-01','Oyunaa Bat','sub','mn-ub','울란바토르 영업소','정상','11-02 17:13',118,'oyunaa@mn-agency.example'],
  ['mn-ub-02','Munkh Erdene','sub','mn-ub','울란바토르 영업소','정상','11-01 15:45',93,'munkh@mn-agency.example'],
-].map(a => ({ id:a[0], name:a[1], lv:a[2], org:a[3], orgName:a[4], status:a[5], last:'2026-' + a[6], cust:a[7], mail:a[8] }));
+].map(a => ({ id:a[0], name:a[1], lv:a[2], org:a[3], orgName:a[4], status:a[5], last:'2026-' + a[6], cust:a[7], mail:a[8],
+  /* 기본 제공 수량을 넘어 생성된 계정 = 유료 추가 계정 (생성 시 과금 안내 확인 기록) */
+  paid:['np-gm','np-ktm-02','np-pkr-01'].includes(a[0]), consent:['np-gm','np-ktm-02','np-pkr-01'].includes(a[0]) ? { at:'2026-10-19 09:30', by:'hi-master' } : null }));
 const LOGS = [
  ['11-03 13:47:10','vn-hn-01','서브','103.21.148.22','서류 업로드','TX-1103-0418 · 법정대리인 동의서 1건','vn-hn'],
  ['11-03 13:44:02','vn-hn-01','서브','103.21.148.22','여권인증 결과 수신','TX-1103-0418 · 성공','vn-hn'],
@@ -909,7 +1147,7 @@ const LOGS = [
  ['11-01 09:02:41','hi-master','마스터','211.234.10.5','보관기간 변경','미개통 보관 30일 (변경 없음 → 확인)','hi'],
  ['10-31 16:22:09','vn-gm','총괄','113.160.92.7','엑셀 다운로드','여권인증 이력 · 61건 · 마스킹 유지','vn'],
 ].map(l => ({ dt:'2026-' + l[0], id:l[1], lv:l[2], ip:l[3], act:l[4], target:l[5], scope:l[6] }));
-const LOG_KIND = { '로그인':/로그인|메일 인증|잠금/, '개인정보 열람':/마스킹|원문/, '다운로드':/다운로드|발급/, '서류':/서류/, '개통 · 삭제':/개통|삭제/, '계정':/계정|잠금 해제/, '정책':/보관기간/ };
+const LOG_KIND = { '로그인':/로그인|메일 인증|잠금/, '개인정보 열람':/마스킹|원문/, '다운로드':/다운로드|발급/, '서류':/서류/, '개통 · 삭제':/개통|삭제/, '계정':/계정|잠금 해제/, '정책':/보관기간/, '이용 · 과금':/확장팩|유료|한도|용량/ };
 
 /* =====================================================================
    STATE
@@ -918,8 +1156,8 @@ const S = {
   authed:false, role:'head', theme:'light', step:1, lang:'ko', loginId:'kt-ops01',
   range:{ dash:[PILOT, TODAY], hist:[PILOT, TODAY], logs:['2026-11-02', TODAY] }, month:'2026-10',
   hist:{ q:'', cc:'', visa:'', office:'', stage:'all', sel:new Set(), sort:{ k:'at', dir:-1 } },
-  logs:{ kind:'', acct:'', ip:'' }, tree:null, unmask:{}, retention:30,
-  c3:{ visa:'D-2', minor:true, cc:'VNM', lang:'vi', method:'here' }, pending:[],
+  logs:{ kind:'', acct:'', ip:'' }, tree:null, unmask:{}, retention:30, ag:'hi',
+  c3:{ visa:'D-2', minor:true, cc:'VNM', lang:'vi', method:'here', office:'vn-hn' }, pending:[],
   order:['여권 데이터 요약','여권 컬러 스캔본','통신개통신청서','입학증명서 (표준입학허가서)','표준근로계약서','개인정보활용동의서','법정대리인 동의서','법정대리인 신분증','가족관계증명서','기타'],
   fname:'{영업소}_{성}_{여권번호끝4}_{발급일}.pdf',
 };
@@ -930,6 +1168,75 @@ const me = () => ME[S.role];
 const scope = () => ROLES[S.role].scope;
 function inScope(office) { const sc = scope(); if (sc === 'kt') return true; let x = office; while (x) { if (x === sc) return true; x = PARENT[x]; } return false; }
 function addLog(act, target) { LOGS.unshift({ dt:`${TODAY} ${nowT()}`, id:me().id, lv:LV[S.role], ip:me().ip, act, target, scope:S.role === 'head' ? 'kt' : S.role === 'sub' ? 'vn-hn' : scope() }); }
+/* 데이터 접근 범위 — 메뉴 · 기능은 동일, 데이터만 차등
+   서브: 본인 담당 고객 / 총괄: 본인 + 소속 서브 담당 고객 / 마스터: 해당 대리점 전체 / KT 헤드마스터: 전체 대리점 */
+function canSee(c) {
+  if (S.role === 'head') return true;
+  if (c.acct === me().id) return true;
+  if (S.role === 'sub') return false;
+  return inScope(c.office);
+}
+/* 대리점 ID 연결 — 조직 · 영업소 → 대리점 */
+const agOf = id => { let x = id; while (x && !AG[x]) x = PARENT[x]; return x || null; };
+const myAg = () => S.role === 'head' ? S.ag : agOf(scope());
+const nowDT = () => `${TODAY} ${nowT().slice(0, 5)}`;
+const packsOf = (ag, m = CUR_M) => PACKS.filter(p => p.ag === ag && p.m === m);
+const packN = (ag, m = CUR_M) => sum(packsOf(ag, m).map(p => p.qty));
+function lim(ag, m = CUR_M) { const a = AG[ag], n = packN(ag, m); return { docs:a.docLimit + n * a.pack.docs, gb:a.storGB + n * a.pack.gb, packs:n }; }
+const useM = (ag, m = CUR_M) => (USE[ag][m] ||= { up:0, reup:0, dl:0 });
+const docUsed = (ag, m = CUR_M) => { const u = useM(ag, m); return u.up + u.reup + u.dl; };
+function agState(ag) {
+  const L = lim(ag), used = docUsed(ag), stor = USE[ag].stor, left = L.gb - stor;
+  return { L, used, stor, docLeft:Math.max(0, L.docs - used), gbLeft:Math.max(0, left), leftPct:Math.max(0, left / L.gb * 100),
+    storOver:stor >= L.gb, docFull:used >= L.docs, warn:stor < L.gb && left / L.gb <= .1 };
+}
+/* 필요 팩 수 — 문서 처리 한도 초과분 · 보관 용량 초과분 각각 산정 후 큰 수량 (중복 산정 없음) */
+function needPacks(ag) {
+  const s = agState(ag), p = AG[ag].pack;
+  const byDoc = Math.ceil(Math.max(0, s.used - s.L.docs) / p.docs), byGb = Math.ceil(Math.max(0, s.stor - s.L.gb) / p.gb);
+  return { byDoc, byGb, n:Math.max(byDoc, byGb) };
+}
+/* 문서 처리 가드 — 보관 용량 초과: 업로드 · 다운로드 차단 / 월 처리 한도 도달: 추가 처리 제한 */
+function docGuard(ag, kind) {
+  const s = agState(ag), isMaster = S.role === 'master', kname = { up:'업로드', reup:'재업로드', dl:'다운로드' }[kind];
+  let why = '';
+  if (s.storOver) why = `보관 용량이 한도(${s.L.gb}GB)를 초과해 문서 ${kname}이(가) 차단되었습니다.`;
+  else if (s.docFull) why = `이번 달 문서 처리 한도(${fmt(s.L.docs)}건)에 도달해 추가 처리가 제한됩니다.`;
+  if (!why) return true;
+  const n = Math.max(1, needPacks(ag).n);
+  openModal(MH(s.storOver ? '보관 용량 초과' : '문서 처리 한도 도달', `${esc(AG[ag].name)} · ${CUR_M.replace('-', '년 ')}월`) + `<div class="m-b"><div class="callout bad">${ic('alert')}<div>${why}</div></div>
+    <p class="ink2" style="font-size:13.5px;margin:14px 0 0">${isMaster ? `확장팩을 신청하면 <b>즉시</b> 한도가 늘어나고 차단이 풀립니다. 현재 필요 수량은 <b>${n}팩</b>입니다.` : '확장팩은 마스터 관리자만 신청할 수 있습니다. <b>소속 마스터 관리자에게 확장 신청을 요청</b>하세요.'}</p></div>`
+    + (isMaster ? `<div class="m-f"><button class="btn" data-act="close-modal">닫기</button><button class="btn btn-p" data-act="pack-open">${ic('plus')}확장팩 신청</button></div>` : `<div class="m-f"><button class="btn btn-p" data-act="close-modal">확인</button></div>`));
+  addLog(s.storOver ? '보관 용량 초과 차단' : '문서 처리 한도 차단', `${AG[ag].name} · ${kname} 시도`);
+  return false;
+}
+/* 문서 처리 1건 집계 + 보관 용량 증감 (MB) */
+function countDoc(ag, kind, target, mb = 0) {
+  useM(ag)[kind]++; USE[ag].stor = Math.max(0, +(USE[ag].stor + mb / 1024).toFixed(4));
+  UEV.unshift({ at:nowDT(), ag, kind:{ up:'업로드', reup:'재업로드', dl:'다운로드' }[kind], who:me().id, target, mb });
+  markUse(me().id, { up:'서류 업로드', reup:'서류 재업로드', dl:'서류 다운로드' }[kind]);
+}
+/* 유료 추가 계정 — 생성 · 로그인만으로는 미과금, 당월 최초 고객정보 · 문서 조회 · 처리 시 당월 전액 과금 */
+function markUse(id, what) {
+  const ac = ACCTS.find(x => x.id === id); if (!ac || !ac.paid || USE_LOG.some(u => u.acct === id && u.m === CUR_M)) return;
+  USE_LOG.push({ acct:id, lv:ac.lv, ag:agOf(ac.org), m:CUR_M, at:nowDT(), what });
+  LOGS.unshift({ dt:`${TODAY} ${nowT()}`, id, lv:LV[ac.lv], ip:'—', act:'유료 계정 최초 이용', target:`${id} · ${what} · ${CUR_M} 이용료 과금 개시`, scope:ac.org });
+}
+const usedThisMonth = id => USE_LOG.find(u => u.acct === id && u.m === CUR_M);
+/* 월 정산서 — 필수 2항목 매월, 선택 항목은 과금 발생 시에만 */
+function statement(ag, m) {
+  const a = AG[ag], n = AUTHN[ag][m] || 0, use = n * a.unit, authAmt = Math.max(use, a.min), minAp = use < a.min;
+  const ex = lv => USE_LOG.filter(u => u.ag === ag && u.m === m && u.lv === lv).length, pk = packN(ag, m);
+  const rows = [
+    { g:'필수', n:'관리자 시스템 · 고객정보 위탁운영 기본료', q:1, u:a.base, amt:a.base, note:'월 정액 · 매월 표시' },
+    { g:'필수', n:'여권인증 사용료', q:n, u:a.unit, amt:authAmt, minAp, note:minAp ? `${fmt(n)}건 × ${fmt(a.unit)}원 = ${fmt(use)}원 → 월 최소료 ${fmt(a.min)}원 적용` : `${fmt(n)}건 × ${fmt(a.unit)}원 = ${fmt(use)}원 · 실사용료 적용 (월 최소료 ${fmt(a.min)}원 이상)` },
+  ];
+  if (ex('general')) rows.push({ g:'선택', n:'추가 총괄 관리자', q:ex('general'), u:a.extra.general, amt:ex('general') * a.extra.general, note:`최초 실제 이용 ${ex('general')}계정 · 일할계산 없음` });
+  if (ex('sub')) rows.push({ g:'선택', n:'추가 서브 관리자', q:ex('sub'), u:a.extra.sub, amt:ex('sub') * a.extra.sub, note:`최초 실제 이용 ${ex('sub')}계정 · 일할계산 없음` });
+  if (pk) rows.push({ g:'선택', n:'이용량 확장팩', q:pk, u:a.pack.price, amt:pk * a.pack.price, note:`마스터 신청 ${packsOf(ag, m).length}회 · 즉시 적용 · 일할계산 없음` });
+  const supply = sum(rows.map(r => r.amt)), vat = Math.floor(supply * .1);
+  return { rows, supply, vat, total:supply + vat, n, minAp, st:STMT_STATE[m] || { st:'집계 중', fix:[] } };
+}
 const custBy = tx => CUST.find(c => c.tx === tx);
 const isGone = c => c.stage === '개통 완료 · 삭제';
 const maskName = n => n.split(' ').map((p, i) => i === 0 ? p : p[0] + '**').join(' ');
@@ -1026,10 +1333,13 @@ function dpInput(el) {
    RENDER
    ===================================================================== */
 const root = $('#root');
+/* v0.2 — C1 · C2 통합(인증 결과) · 여권인증 독립 서비스 메뉴(헤드마스터 제외) · C4 독립 메뉴 제거(고객 상세에서 발급)
+   이용 · 정산: 대리점별 설정값(내부 어드민) 읽기 전용 반영 */
 const MENU = [
-  { sec:'업무' }, { id:'dashboard', l:'대시보드', i:'grid' }, { id:'history', l:'여권인증 이력', i:'shield' }, { id:'start', l:'여권인증 시작', i:'scan', only:['sub'] }, { id:'issue', l:'제출 서류 발급', i:'pdf' },
-  { id:'settle', l:'정산 관리', i:'coins', only:['head','master'] }, { id:'accounts', l:'계정 관리', i:'users', only:['head','master','general'] },
-  { sec:'정책' }, { id:'retention', l:'개인정보 보관', i:'lock' }, { id:'logs', l:'관리자 사용 로그', i:'log' },
+  { sec:'업무' }, { id:'dashboard', l:'대시보드', i:'grid' }, { id:'history', l:'인증 결과', i:'shield' },
+  { sec:'서비스' }, { id:'start', l:'여권인증', i:'scan', only:['master','general','sub'] },
+  { sec:'이용 · 정산' }, { id:'usage', l:'이용 현황', i:'chart' }, { id:'contract', l:'계약 · 요금', i:'file', only:['head','master'] }, { id:'settle', l:'월 이용료', i:'coins', only:['head','master'] },
+  { sec:'관리' }, { id:'accounts', l:'계정 관리', i:'users', only:['head','master'] }, { id:'retention', l:'개인정보 보관', i:'lock' }, { id:'logs', l:'관리자 사용 로그', i:'log' },
 ];
 const route = () => (location.hash.replace(/^#\/?/, '') || (S.authed ? 'dashboard' : 'login'));
 const allowed = id => { const m = MENU.find(x => x.id === id); return !m || !m.only || m.only.includes(S.role); };
@@ -1040,16 +1350,17 @@ function render() {
   if (!S.authed && p !== 'login') { location.hash = '#/login'; return; }
   if (p === 'login') { if (S.authed) { location.hash = '#/dashboard'; return; } root.innerHTML = Login(); bindLogin(); return; }
   clearInterval(otpTimer);
+  if (p === 'issue') { location.hash = arg ? '#/customer/' + arg : '#/history'; return; } /* C4 독립 메뉴 제거 → 고객 상세 */
   let body;
   if (!allowed(p)) body = Denied(p);
-  else body = ({ dashboard:Dashboard, history:History, customer:() => Customer(arg), start:Start, issue:() => Issue(arg), settle:Settle, accounts:Accounts, retention:Retention, logs:Logs })[p]?.() ?? Dashboard();
-  root.innerHTML = Shell(p, body, arg);
+  else body = ({ dashboard:Dashboard, history:History, customer:() => Customer(arg), start:Start, usage:Usage, contract:Contract, settle:Settle, accounts:Accounts, retention:Retention, logs:Logs })[p]?.() ?? Dashboard();
+  root.innerHTML = Shell(p, Banner(p) + body, arg);
   if (r !== lastR) window.scrollTo(0, 0); lastR = r;
   bindPage(p);
 }
 function crumb(p, arg) {
   const m = MENU.find(x => x.id === p);
-  if (p === 'customer') return ['업무', '여권인증 이력', arg || ''];
+  if (p === 'customer') return ['업무', '인증 결과', arg || ''];
   return [m ? (MENU.slice(0, MENU.indexOf(m)).reverse().find(x => x.sec)?.sec || '') : '업무', m ? m.l : '대시보드'];
 }
 function Shell(p, body, arg) {
@@ -1060,7 +1371,7 @@ function Shell(p, body, arg) {
   <aside class="sb" id="sb">
     <div class="sb-head"><a href="#/dashboard" aria-label="SIGNION 파트너 관리자 홈">${logo('h')}</a><span class="sb-tag pt">PARTNER</span></div>
     <nav class="nav" aria-label="메뉴">${nav}</nav>
-    <div class="sb-foot"><div class="scope-card">${tierB(S.role)}<b>${esc(M.org)}</b>${esc(M.id)}<br>조회 범위 · ${esc(R.range)}</div><div class="sb-ver">Partner Prototype v0.1 · 2026.11</div></div>
+    <div class="sb-foot"><div class="scope-card">${tierB(S.role)}<b>${esc(M.org)}</b>${esc(M.id)}<br>조회 범위 · ${esc(R.range)}</div><div class="sb-ver">Partner Prototype v0.2 · 2026.11</div></div>
   </aside>
   <div class="main">
     <header class="top">
@@ -1080,7 +1391,22 @@ function Shell(p, body, arg) {
 const PH = (title, desc, acts = '', pre = '') => `<div class="ph"><div>${pre}<h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>${acts ? `<div class="acts">${acts}</div>` : ''}</div>`;
 const KPI = (l, v, u, d, icon, cls = '') => `<div class="card kpi ${cls}"><div class="l">${icon ? ic(icon) : ''}${l}</div><div class="v">${v}<small>${u}</small></div>${d ? `<div class="d">${d}</div>` : ''}</div>`;
 const Card = (title, body, opt = {}) => `<section class="card" ${opt.style ? `style="${opt.style}"` : ''}><div class="card-h"><h3>${title}</h3>${opt.sub ? `<span class="sub">${opt.sub}</span>` : ''}${opt.r ? `<div class="r">${opt.r}</div>` : ''}</div><div class="${opt.flush ? '' : 'card-b'}">${body}</div></section>`;
-const Denied = p => PH('접근 권한이 없습니다', `「${MENU.find(m => m.id === p)?.l || p}」 메뉴는 ${LV[S.role]} 권한에 제공되지 않습니다.`) + `<div class="callout info">${ic('shieldl')}<div>위계별 메뉴: 정산 관리는 헤드마스터·마스터, 계정 관리는 서브를 제외한 위계, 여권인증 시작은 서브(영업소 직원) 전용입니다.</div></div>`;
+const Denied = p => PH('접근 권한이 없습니다', `「${MENU.find(m => m.id === p)?.l || p}」 메뉴는 ${LV[S.role]} 권한에 제공되지 않습니다.`) + `<div class="callout info">${ic('shieldl')}<div>여권인증 · 고객 · 문서 관리 기능은 마스터 · 총괄 · 서브 모두 같고 데이터 접근 범위만 다릅니다. KT 헤드마스터는 여권인증 없이 전체 대리점 데이터를 조회 · 관리합니다. 계약 · 요금 · 월 이용료 · 계정 관리는 마스터(대리점)와 KT 헤드마스터 메뉴입니다.</div></div>`;
+/* 한도 경고 · 초과 안내 — 보관 용량 잔여 10% 경고 / 초과 시 업로드 · 다운로드 차단 / 문서 처리 월 한도 도달 */
+function Banner(p) {
+  if (S.role === 'head') {
+    const hot = Object.keys(AG).filter(k => { const s = agState(k); return s.warn || s.storOver || s.docFull; });
+    return hot.length && p !== 'usage' ? `<div class="banner info">${ic('bell')}<span class="grow">한도 경고 · 초과 대리점 <b>${hot.length}곳</b> — ${hot.map(k => esc(AG[k].name)).join(', ')}</span><a class="btn btn-sm" href="#/usage">이용 현황</a></div>` : '';
+  }
+  const ag = myAg(), s = agState(ag), m = S.role === 'master';
+  const cta = m ? `<button class="btn btn-sm ${s.storOver || s.docFull ? 'btn-p' : ''}" data-act="pack-open">${ic('plus')}확장팩 신청</button>` : '';
+  const ask = m ? '' : ' 마스터 관리자에게 확장 신청을 요청하세요.';
+  const out = [];
+  if (s.storOver) out.push(`<div class="banner bad">${ic('alert')}<span class="grow"><b>보관 용량 초과</b> (${s.stor.toFixed(2)} / ${s.L.gb}GB) — 문서 업로드 · 다운로드가 차단되었습니다.${m ? ' 확장팩을 신청하면 즉시 해제됩니다.' : ask}</span>${cta}</div>`);
+  else if (s.warn) out.push(`<div class="banner warn">${ic('alert')}<span class="grow"><b>보관 용량 잔여 ${s.leftPct.toFixed(1)}%</b> (${s.gbLeft.toFixed(2)}GB 남음) — 초과하면 업로드 · 다운로드가 차단됩니다.${m ? '' : ask}</span>${cta}</div>`);
+  if (s.docFull) out.push(`<div class="banner bad">${ic('alert')}<span class="grow"><b>이번 달 문서 처리 한도 도달</b> (${fmt(s.used)} / ${fmt(s.L.docs)}건) — 추가 업로드 · 재업로드 · 다운로드가 제한됩니다.${m ? '' : ask}</span>${s.storOver ? '' : cta}</div>`);
+  return out.join('');
+}
 
 /* ---------- B1 대시보드 ---------- */
 function dashChart(series) {
@@ -1094,10 +1420,10 @@ function dashChart(series) {
   return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="일별 인증 시도 막대 차트"><g class="grid">${ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/>`).join('')}</g><g class="axis">${ticks.map(t => `<text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}${bars}</g></svg></div>`;
 }
 function Dashboard() {
-  const s = STATS[scope()], [a, b] = S.range.dash, full = scaleInts(DAILY, s.tries);
+  const s = STATS[S.role === 'sub' ? me().id : scope()], [a, b] = S.range.dash, full = scaleInts(DAILY, s.tries);
   const series = DAYS.map((d, i) => ({ d, v:full[i] })).filter(x => x.d >= a && x.d <= b);
   const tries = sum(series.map(x => x.v)), ok = Math.round(s.ok * tries / s.tries), fail = tries - ok, fails = scaleInts(s.fails, fail);
-  const fmax = Math.max(1, ...fails), vt = s.visa[0] + s.visa[1], inS = CUST.filter(c => inScope(c.office));
+  const fmax = Math.max(1, ...fails), vt = s.visa[0] + s.visa[1], inS = CUST.filter(canSee);
   const due = inS.filter(c => !isGone(c) && !['인증 실패'].includes(c.stage) && diffD(TODAY, addD(c.at.slice(0, 10), S.retention)) <= 7).length;
   const late = inS.filter(c => c.stage === '서류 보완' && diffD(c.at.slice(0, 10), TODAY) >= 7).length;
   const noData = !series.length;
@@ -1106,16 +1432,16 @@ function Dashboard() {
   + `<div class="g2">${Card('일별 인증 추이', noData ? `<div class="empty">${ic('cal')}<div>선택한 기간(${a} ~ ${b})에는 시범 운영 데이터가 없습니다.<br><span style="font-size:12px">시범 운영은 ${PILOT}에 시작했습니다.</span></div></div>` : dashChart(series), { sub:`합계 ${fmt(tries)}건 · 주말은 옅게, 오늘은 집계 중` })}
     ${Card('실패 사유', fails.map((v, i) => `<div class="hbar"><span>${FAILS[i]}</span><span class="trk"><i style="width:${(v * 100 / fmax).toFixed(0)}%;background:var(--bad)"></i></span><span class="v">${v}</span></div>`).join(''), { sub:`합계 ${fail}건` })}</div>`
   + Card('처리 단계', `<div class="pipe">${s.pipe.map((v, i) => `<button class="stage" data-act="stage" data-s="${STAGES[i]}">${badge(STAGES[i])}<div class="c">${fmt(v)}</div><div class="h">${STAGE_HINT[i]}</div></button>`).join('')}</div>`, { sub:`현재 기준 · 합계 = 성공 ${fmt(s.ok)}건 · 단계를 누르면 이력이 그 단계로 열립니다`, style:'margin-bottom:16px' })
-  + `<div class="g2">${Card(S.role === 'sub' ? '같은 영업소 계정별' : '하위 조직별 현황', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>${S.role === 'sub' ? '계정' : '조직'}</th><th>위계</th><th class="n">시도</th><th class="n">성공</th><th class="n">성공률</th><th class="n">검수 대기</th></tr></thead><tbody>
-      ${s.kids.map(k => `<tr ${S.role !== 'sub' ? `data-act="go-org" data-o="${k[5]}"` : ''}><td class="strong">${esc(k[0])}</td><td>${k[1]}</td><td class="n num">${fmt(k[2])}</td><td class="n num">${fmt(k[3])}</td><td class="n num">${pct(k[3], k[2])}%</td><td class="n num">${k[4]}</td></tr>`).join('')}</tbody></table></div>`, { flush:true, sub:'시범 운영 전체 기준' })}
+  + `<div class="g2">${Card(S.role === 'sub' ? '내 처리 현황' : '하위 조직별 현황', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>${S.role === 'sub' ? '계정' : '조직'}</th><th>위계</th><th class="n">시도</th><th class="n">성공</th><th class="n">성공률</th><th class="n">검수 대기</th></tr></thead><tbody>
+      ${s.kids.map(k => `<tr ${allowed('accounts') ? `data-act="go-org" data-o="${k[5]}"` : ''}><td class="strong">${esc(k[0])}</td><td>${k[1]}</td><td class="n num">${fmt(k[2])}</td><td class="n num">${fmt(k[3])}</td><td class="n num">${pct(k[3], k[2])}%</td><td class="n num">${k[4]}</td></tr>`).join('')}</tbody></table></div>`, { flush:true, sub:'시범 운영 전체 기준' })}
     ${Card('고객 구성 · 알림', [['근로자 (E-9 · E-7)', s.visa[0]], ['유학생 (D-2 · D-4)', s.visa[1]], ['└ 미성년', s.visa[2]]].map(([l, v]) => `<div class="hbar"><span>${l}</span><span class="trk"><i style="width:${(v * 100 / vt).toFixed(0)}%"></i></span><span class="v">${v}</span></div>`).join('')
       + `<div style="display:grid;gap:8px;margin-top:14px"><a class="callout warn" href="#/retention">${ic('clock')}<div>7일 안에 보관기한이 끝나는 고객 <b>${due}</b>명 — 기한이 지나면 자동 삭제됩니다.</div></a><a class="callout warn" href="#/history" data-act="stage" data-s="서류 보완">${ic('file')}<div>서류 보완 7일 경과 <b>${late}</b>명</div></a></div>`)}</div>`;
 }
 
-/* ---------- C1 여권인증 이력 ---------- */
+/* ---------- 인증 결과 (C1 · C2 통합) ---------- */
 function histRows(ignoreStage) {
   const h = S.hist, q = h.q.trim().toLowerCase(), [a, b] = S.range.hist;
-  let rows = CUST.filter(c => inScope(c.office) && c.at.slice(0, 10) >= a && c.at.slice(0, 10) <= b
+  let rows = CUST.filter(c => canSee(c) && c.at.slice(0, 10) >= a && c.at.slice(0, 10) <= b
     && (!q || (c.tx + ' ' + c.name).toLowerCase().includes(q)) && (!h.cc || c.cc === h.cc) && (!h.office || c.office === h.office)
     && (!h.visa || (h.visa === 'work' ? c.visa.startsWith('E') : c.visa.startsWith('D'))));
   if (!ignoreStage && h.stage !== 'all') rows = rows.filter(c => c.stage === h.stage);
@@ -1129,7 +1455,7 @@ function History() {
   const selectable = c => c.stage === '검수 대기';
   const selN = [...h.sel].filter(tx => rows.some(c => c.tx === tx)).length;
   const th = (k, l) => { const on = h.sort.k === k; return `<th class="sortable ${on ? 'sorted' : ''}" data-act="sort" data-k="${k}" aria-sort="${on ? (h.sort.dir > 0 ? 'ascending' : 'descending') : 'none'}">${l}${ic(on ? (h.sort.dir > 0 ? 'up' : 'down') : 'sortv', 'so')}</th>`; };
-  return PH('여권인증 이력', '인증 결과를 모듈별로 보고, 원본과 대조한 뒤 검수 완료를 체크하고, 엑셀로 내려받습니다.',
+  return PH('인증 결과', '인증 건을 선택하면 고객 상세(인증 결과 · 검수 · 제출서류 · PDF 발급)가 열립니다. 실패 건은 오류코드별 실패 사유를 함께 보여 줍니다.',
     `<button class="btn" data-act="xls">${ic('download')}엑셀 다운로드</button><button class="btn" data-act="xls-raw">${ic('eye')}원문 다운로드</button>`)
   + `<section class="card"><div class="tb">
       <label class="sfield">${ic('search')}<input id="hq" value="${esc(h.q)}" placeholder="이름 · 인증번호 검색 후 Enter"></label>
@@ -1146,7 +1472,7 @@ function History() {
       ${rows.length ? rows.map(c => { const g = isGone(c), f = c.stage === '인증 실패';
         return `<tr data-act="open-c" data-tx="${c.tx}" class="${g ? 'gone' : ''} ${h.sel.has(c.tx) ? 'sel' : ''}"><td class="ck"><input type="checkbox" class="cbox" data-act="hck" data-tx="${c.tx}" ${selectable(c) ? '' : 'disabled'} ${h.sel.has(c.tx) ? 'checked' : ''} aria-label="${c.tx} 선택"></td>
         <td class="mono">${c.tx}</td><td class="${g ? '' : 'strong'}">${esc(showName(c))}</td><td class="mono">${c.cc}</td><td>${c.visa}${c.minor ? ' <span class="badge t-warn">미성년</span>' : ''}</td><td class="mono">${showPass(c)}</td>
-        <td class="num">${c.at.slice(5)}</td><td>${modChips(c)}</td><td class="num">${f || g ? '—' : `${docCount(c)} / ${reqDocs(c).length}`}</td><td>${badge(c.stage)}${g && c.delAt ? `<span class="sub">${c.delAt.slice(5)} 삭제</span>` : ''}</td><td>${OFFICE[c.office]}</td><td class="mono">${c.acct}</td></tr>`; }).join('')
+        <td class="num">${c.at.slice(5)}</td><td>${modChips(c)}</td><td class="num">${f || g ? '—' : `${docCount(c)} / ${reqDocs(c).length}`}</td><td>${badge(c.stage)}${g && c.delAt ? `<span class="sub">${c.delAt.slice(5)} 삭제</span>` : ''}${f && FAIL_CODE[c.code] ? `<span class="sub" style="color:var(--bad)">${FAIL_CODE[c.code].t}</span>` : ''}</td><td>${OFFICE[c.office]}</td><td class="mono">${c.acct}</td></tr>`; }).join('')
       : `<tr><td colspan="12"><div class="empty">${ic('search')}<div>조건에 맞는 고객이 없습니다.<br><span style="font-size:12px">기간(${S.range.hist.join(' ~ ')})이나 필터를 바꿔 보세요.</span></div></div></td></tr>`}
     </tbody></table></div>
     <div class="tf"><span>표시 <b class="num">${rows.length}</b>건 · ${esc(ROLES[S.role].range)}</span><span class="muted">목록에서는 이름·여권번호를 가리고, 고객 상세의 「마스킹 해제」 때만 원문을 보여 줍니다.</span></div></section>`;
@@ -1157,26 +1483,27 @@ const PH_PASS = '<svg viewBox="0 0 120 84" aria-hidden="true"><rect x="2" y="2" 
 const PH_FACE = '<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="30" r="15" fill="currentColor" opacity=".25"/><path d="M12 76c4-16 15-24 28-24s24 8 28 24" fill="currentColor" opacity=".25"/></svg>';
 function Customer(tx) {
   const c = custBy(tx);
-  if (!c || !inScope(c.office)) return PH('고객을 찾을 수 없습니다', `${esc(tx || '')} — 현재 권한(${ROLES[S.role].label})의 조회 범위 밖이거나 없는 인증번호입니다.`, `<a class="btn" href="#/history">${ic('shield')}여권인증 이력</a>`);
+  if (!c || !canSee(c)) return PH('고객을 찾을 수 없습니다', `${esc(tx || '')} — 현재 권한(${ROLES[S.role].label} · ${esc(ROLES[S.role].range)})의 데이터 접근 범위 밖이거나 없는 인증번호입니다.`, `<a class="btn" href="#/history">${ic('shield')}인증 결과</a>`);
+  if (!isGone(c)) markUse(me().id, '고객 상세 조회');
   const g = isGone(c), f = c.stage === '인증 실패', req = reqDocs(c), dn = docCount(c), um = S.unmask[c.tx];
   const flow = ['인증', '검수', '서류', '발급', '개통'];
   const cur = f ? 0 : c.stage === '인증 진행 중' ? 0 : !c.reviewed ? 1 : c.stage === '서류 보완' ? 2 : c.stage === '발급 대기' ? 3 : c.stage === '개통 대기' ? 4 : 5;
-  const back = `<a class="back" href="#/history">${ic('chev')}여권인증 이력</a>`;
+  const back = `<a class="back" href="#/history">${ic('chev')}인증 결과</a>`;
   const title = `${esc(showName(c))} ${badge(c.stage)}`;
   const tags = `<div class="tagrow"><span class="chip mono">${c.tx}</span><span class="chip">${c.visa} ${c.visa.startsWith('E') ? '근로자' : '유학생'}</span>${c.minor ? '<span class="badge t-warn">미성년</span>' : ''}<span class="chip">${OFFICE[c.office]} 영업소 · ${c.acct}</span><span class="chip">${c.at}</span></div>`;
   const acts = g ? '' : `<button class="btn" data-act="unmask" data-tx="${c.tx}" ${f && c.pmask === '—' ? 'disabled' : ''}>${ic(um ? 'lock' : 'eye')}${um ? '다시 가리기' : '마스킹 해제'}</button>
-    ${f ? '' : `<a class="btn" href="#/issue/${c.tx}">${ic('pdf')}제출 서류 발급</a><button class="btn btn-df" data-act="done" data-tx="${c.tx}" ${c.stage === '개통 대기' ? '' : 'disabled title="PDF 발급 후(개통 대기) 처리할 수 있습니다"'}>${ic('sim')}개통 완료</button>`}`;
+    ${f ? '' : `<button class="btn" data-act="goto-issue">${ic('pdf')}제출서류 PDF 발급</button><button class="btn btn-df" data-act="done" data-tx="${c.tx}" ${c.stage === '개통 대기' ? '' : 'disabled title="PDF 발급 후(개통 대기) 처리할 수 있습니다"'}>${ic('sim')}개통 완료</button>`}`;
   const hist = `<ul class="tl">${c.hist.map(([t, txt, who]) => `<li><span class="dot ${/실패/.test(txt) ? 'bad' : /삭제/.test(txt) ? '' : ''}">${ic(/실패/.test(txt) ? 'x' : 'check')}</span><div class="t">${esc(txt)}</div><div class="c num">${t} · ${esc(who)}</div></li>`).join('')}</ul>`;
   if (g) return PH(title, '', '', back) + tags + `<div style="height:16px"></div><div class="g2e">${Card('남아 있는 정보', `<div class="callout info" style="margin-bottom:14px">${ic('shieldl')}<div><b>개인정보 삭제됨</b> · ${c.delAt} — 여권 정보·이미지·업로드 서류가 지워졌습니다. 개인정보가 없는 운영 로그(3년)만 남습니다.</div></div><dl class="kv"><dt>인증번호</dt><dd class="mono">${c.tx}</dd><dt>국적 · 비자</dt><dd>${c.cc} · ${c.visa}</dd><dt>인증 결과</dt><dd>${modChips(c)}</dd><dt>등록 계정</dt><dd class="mono">${c.acct}</dd></dl>`)}${Card('처리 이력', hist)}</div>`;
   const docRow = (d, isReq) => { const fs = c.files[d] || [];
     return `<div class="doc" data-drop="${c.tx}|${esc(d)}"><span class="st ${fs.length ? 'ok' : isReq ? 'miss' : 'opt'}">${ic(fs.length ? 'check' : isReq ? 'x' : 'plus')}</span>
       <span class="nm">${d}${isReq ? '<span class="req-t">필수</span>' : '<span class="opt-t">선택</span>'}</span>${slots(fs.length)}
       <button class="btn btn-sm ${isReq && !fs.length ? 'btn-p' : ''}" data-act="up" data-tx="${c.tx}" data-d="${esc(d)}" ${fs.length >= MAXF ? 'disabled' : ''}>${ic('upload')}올리기</button>
-      ${fs.length ? `<div class="files">${fs.map((fn, i) => `<span class="file">${ic('pdf')}${esc(fn)}<button data-act="dl" data-n="${esc(fn)}" aria-label="내려받기">${ic('download')}</button><button data-act="rm" data-tx="${c.tx}" data-d="${esc(d)}" data-i="${i}" aria-label="삭제">${ic('x')}</button></span>`).join('')}</div>` : ''}</div>`; };
+      ${fs.length ? `<div class="files">${fs.map((fn, i) => `<span class="file">${ic('pdf')}${esc(fn)}<button data-act="reup" data-tx="${c.tx}" data-d="${esc(d)}" data-i="${i}" aria-label="재업로드" title="재업로드 (같은 자리 교체)">${ic('refresh')}</button><button data-act="dl" data-tx="${c.tx}" data-n="${esc(fn)}" aria-label="내려받기" title="내려받기">${ic('download')}</button><button data-act="rm" data-tx="${c.tx}" data-d="${esc(d)}" data-i="${i}" aria-label="삭제">${ic('x')}</button></span>`).join('')}</div>` : ''}</div>`; };
   return PH(title, '', acts, back) + tags
   + `<div class="card" style="padding:16px 20px;margin:16px 0"><div class="steps" style="margin:0">${flow.map((s, i) => `<span class="step ${cur > i ? 'done' : cur === i ? 'cur' : ''}"><span class="b">${cur > i ? ic('check') : i + 1}</span>${s}</span>${i < flow.length - 1 ? `<span class="step-ln ${cur > i ? 'done' : ''}"></span>` : ''}`).join('')}</div></div>`
   + `<div class="g2">${Card('인증 결과', `<div class="imgs3" style="margin-bottom:16px"><div><div class="phx">${PH_PASS}</div><div class="phx-cap">여권 이미지</div></div><div><div class="phx">${PH_FACE}</div><div class="phx-cap">여권 얼굴</div></div><div><div class="phx live">${PH_FACE}</div><div class="phx-cap">실시간 얼굴</div></div></div>
-      ${f ? `<div class="callout bad" style="margin-bottom:14px">${ic('x')}<div><b>${c.code}</b> · ${FAIL_MSG[c.code] || '인증 실패'}</div></div>` : ''}
+      ${f ? failBox(c) : ''}
       <dl class="kv"><dt>성 / 이름</dt><dd>${esc(showName(c).split(' ')[0] || '—')} / ${esc(showName(c).split(' ').slice(1).join(' ') || '—')}</dd><dt>생년월일 · 성별</dt><dd class="num">${um ? c.birth : c.birth.slice(0, 4) + '-••-••'} · ${c.sex}</dd><dt>국적</dt><dd>${c.cc} ${CCN[c.cc]}</dd><dt>여권번호</dt><dd class="mono">${showPass(c)}</dd><dt>발급 · 만료</dt><dd class="num">${c.issueD} · ${c.expD}</dd>
       <dt>모듈별 결과</dt><dd>${modChips(c)} <span class="muted" style="font-size:12px">안면 일치 기준 80</span></dd><dt>MRZ 이중 확인</dt><dd>사용 안 함 (서버 정책)</dd></dl>`, { sub:'SIGNION 결과 원본 · 수정 불가' })}
     ${Card('검수', `${c.reviewed ? `<div class="callout info" style="margin-bottom:12px">${ic('check')}<div>검수 완료 · ${c.acct}</div></div>` : '<p class="ink2" style="margin:0 0 10px;font-size:13px">여권 이미지와 정보를 대조한 뒤 검수 완료를 누르세요.</p>'}
@@ -1184,17 +1511,45 @@ function Customer(tx) {
       <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" data-act="memo" data-tx="${c.tx}">메모 저장</button>${f ? '' : `<button class="btn btn-p" data-act="review" data-tx="${c.tx}" ${c.reviewed ? 'disabled' : ''}>${ic('check')}${c.reviewed ? '검수 완료됨' : '검수 완료'}</button>`}</div>
       <div class="sec-t">처리 이력</div>${hist}`)}</div>`
   + (f ? '' : `<div class="g2">${Card('필수 서류', `<div class="docs"><div class="doc"><span class="st ok">${ic('check')}</span><span class="nm">여권 컬러 스캔본<span class="auto-t">자동</span></span><span class="ct">SIGNION 결과</span><span></span></div>${req.map(d => docRow(d, true)).join('')}${docRow('기타', false)}</div>
-      <p class="muted" style="font-size:12.5px;margin:10px 2px 0">항목당 최대 ${MAXF}개 · 파일을 각 행에 끌어다 놓아도 됩니다 · 필수 항목이 모두 차고 검수가 끝나면 「발급 대기」로 넘어갑니다.</p>`, { sub:`필수 ${req.length}종 중 ${dn}종${c.minor ? ' · 미성년 법정대리인 서류 포함' : ''}` })}
-    ${Card('고객 관리 엑셀', `<p class="ink2" style="margin:0 0 12px;font-size:13px">지정 양식에 여권 정보가 채워진 파일을 내려받아 작성한 뒤 올립니다.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="form-dl" data-tx="${c.tx}">${ic('download')}양식 내려받기</button><button class="btn" data-act="form-up" data-tx="${c.tx}">${ic('upload')}작성본 올리기</button></div><div class="callout warn" style="margin-top:14px">${ic('alert')}<div>양식 세부 항목은 KT·대리점과 협의 후 확정합니다.</div></div>`)}</div>`);
+      <p class="muted" style="font-size:12.5px;margin:10px 2px 0">항목당 최대 ${MAXF}개 · 파일을 각 행에 끌어다 놓아도 됩니다 · 필수 항목이 모두 차고 검수가 끝나면 「발급 대기」로 넘어갑니다.<br>성공한 업로드 · 재업로드 · 다운로드는 각 1건씩 이번 달 문서 처리 건수에 집계됩니다 (목록 조회 제외 · 미리보기 없음).</p>`, { sub:`필수 ${req.length}종 중 ${dn}종${c.minor ? ' · 미성년 법정대리인 서류 포함' : ''}` })}
+    <div style="display:grid;gap:16px;align-content:start">${IssueCard(c)}
+    ${Card('고객 관리 엑셀', `<p class="ink2" style="margin:0 0 12px;font-size:13px">지정 양식에 여권 정보가 채워진 파일을 내려받아 작성한 뒤 올립니다.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="form-dl" data-tx="${c.tx}">${ic('download')}양식 내려받기</button><button class="btn" data-act="form-up" data-tx="${c.tx}">${ic('upload')}작성본 올리기</button></div><div class="callout warn" style="margin-top:14px">${ic('alert')}<div>양식 세부 항목은 KT·대리점과 협의 후 확정합니다.</div></div>`)}</div></div>`);
+}
+/* 인증 실패 사유 — 오류코드 기반 */
+function failBox(c) {
+  const fc = FAIL_CODE[c.code] || { t:'인증 실패', why:FAIL_MSG[c.code] || '실패 사유 정보가 없습니다.', how:'KT 담당자에게 문의하세요.', bill:true };
+  return `<div class="fail-box"><div class="fh">${ic('x')}인증 실패 · ${esc(fc.t)} <span class="mono" style="margin-left:auto;font-weight:600">${esc(c.code)}</span></div>
+    <dl class="kv"><dt>실패 사유</dt><dd>${esc(fc.why)}</dd><dt>조치 안내</dt><dd>${esc(fc.how)}</dd><dt>인증료 과금</dt><dd>${fc.bill ? badge('결과 산출 · 청구 대상 1건', 'warn') : badge('결과 미산출 · 청구 제외', '')}</dd></dl></div>`;
+}
+/* ---------- 제출서류 PDF 발급 (C4 → 고객 상세 내, 독립 메뉴 · 미리보기 없음) ---------- */
+function issueItems(c) {
+  const req = reqDocs(c);
+  return S.order.filter(d => d === '여권 데이터 요약' || d === '여권 컬러 스캔본' || req.includes(d) || (d === '기타' && (c.files['기타'] || []).length));
+}
+const issuePages = c => sum(issueItems(c).map(d => d === '여권 데이터 요약' || d === '여권 컬러 스캔본' ? 1 : Math.max(1, (c.files[d] || []).length)));
+function IssueCard(c) {
+  const items = issueItems(c), req = reqDocs(c), missing = req.filter(d => !(c.files[d] || []).length), canEdit = ['head','master'].includes(S.role);
+  return `<section class="card" id="issue-card"><div class="card-h"><h3>제출서류 PDF 발급</h3><span class="sub">${issuePages(c)}쪽 · ${esc(AG[agOf(c.office)]?.name || '')} 템플릿${canEdit ? '' : ' · 읽기 전용'}</span></div><div class="card-b">
+    <div class="sec-t" style="margin-top:0">병합 순서</div>
+    <ol class="order" id="ord">${items.map((d, i) => { const miss = missing.includes(d); return `<li class="${miss ? 'miss' : ''}" ${canEdit ? `draggable="true" data-od="${esc(d)}"` : ''}>${canEdit ? ic('grip', 'grip') : ''}<span class="no">${i + 1}</span>${d}${d === '여권 데이터 요약' || d === '여권 컬러 스캔본' ? ' <span class="auto-t">자동</span>' : miss ? ' <span class="req-t">미등록</span>' : ''}
+      ${canEdit ? `<span class="mv"><button data-act="mv" data-d="${esc(d)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="위로">${ic('up')}</button><button data-act="mv" data-d="${esc(d)}" data-dir="1" ${i === items.length - 1 ? 'disabled' : ''} aria-label="아래로">${ic('down')}</button></span>` : ''}</li>`; }).join('')}</ol>
+    <div class="sec-t">파일명</div>
+    ${canEdit ? `<input class="input mono" id="fname" data-tx="${c.tx}" value="${esc(S.fname)}" style="width:100%"><div class="toks">${['{영업소}','{성}','{이름}','{인증번호}','{여권번호끝4}','{발급일}','{비자}'].map(t => `<button class="tokb" data-act="tok" data-t="${t}">${t}</button>`).join('')}</div>` : ''}
+    <div class="fname-out">→ ${esc(fileName(c))}</div>
+    ${missing.length ? `<div class="callout bad" style="margin-top:14px">${ic('alert')}<div>필수 서류 ${missing.length}종(${missing.join(', ')})이 없어 발급할 수 없습니다.</div></div>` : !c.reviewed ? `<div class="callout warn" style="margin-top:14px">${ic('alert')}<div>검수 완료 후 발급할 수 있습니다.</div></div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:14px;align-items:center"><span class="muted" style="font-size:12.5px;flex:1">미리보기 없이 병합 PDF를 바로 내려받습니다 · 다운로드 1건 집계</span><button class="btn btn-p" data-act="issue" data-tx="${c.tx}" ${missing.length || !c.reviewed ? 'disabled' : ''}>${ic('pdf')}PDF 발급${c.stage === '개통 대기' ? ' (재발급)' : ''}</button></div>
+  </div></section>`;
 }
 
 /* ---------- C3 여권인증 시작 ---------- */
 function Start() {
   const x = S.c3, sel = (id, l, opts, v) => `<div class="fld"><label for="${id}">${l}</label><select class="select" id="${id}" data-c3="${id}" style="width:100%">${opts.map(([val, t, dis]) => `<option value="${val}" ${String(v) === String(val) ? 'selected' : ''} ${dis ? 'disabled' : ''}>${t}</option>`).join('')}</select></div>`;
-  const pend = [...S.pending, ...CUST.filter(c => c.office === 'vn-hn' && c.at.startsWith(TODAY)).slice(0, 3)];
-  return PH('여권인증 시작', '고객 구분을 입력하고 SIGNION 인증 화면을 엽니다. 결과는 이 관리자로 돌아와 고객 상세가 됩니다.')
-  + (S.role !== 'sub' ? `<div class="callout warn" style="margin-bottom:16px">${ic('alert')}<div>서브 관리자(영업소 직원) 기능입니다.</div></div>` : '')
-  + `<div class="g2e">${Card('1. 고객 구분', `<div class="fgrid">${sel('visa', '비자 유형', [['D-2','D-2 유학생'],['D-4','D-4 유학생'],['E-9','E-9 근로자'],['E-7','E-7 근로자']], x.visa)}
+  const pend = [...S.pending.filter(c => c.acct === me().id), ...CUST.filter(c => c.acct === me().id && c.at.startsWith(TODAY)).slice(0, 3)];
+  const offs = S.role === 'sub' ? ['vn-hn'] : Object.keys(OFFICE).filter(inScope);
+  if (!offs.includes(x.office)) x.office = offs[0];
+  return PH('여권인증', '고객 구분을 입력하고 SIGNION 인증 화면을 엽니다. 결과는 인증 결과 메뉴로 돌아와 고객 상세가 되며, 인증한 관리자가 담당자로 지정됩니다.')
+  + `<div class="callout info" style="margin-bottom:16px">${ic('shieldl')}<div>마스터 · 총괄 · 서브 관리자 모두 같은 기능을 씁니다. 결과가 산출된 인증(성공 · 실패)은 건당 인증료 청구 대상이며, 중도 이탈 · 통신 오류처럼 결과가 없는 요청은 제외됩니다.</div></div>`
+  + `<div class="g2e">${Card('1. 고객 구분', `<div class="fgrid">${offs.length > 1 ? sel('office', '담당 영업소', offs.map(o => [o, `${OFFICE[o]} 영업소`]), x.office) : ''}${sel('visa', '비자 유형', [['D-2','D-2 유학생'],['D-4','D-4 유학생'],['E-9','E-9 근로자'],['E-7','E-7 근로자']], x.visa)}
       ${sel('minor', '미성년 여부', [[1,'미성년 (법정대리인 서류 3종 추가)', x.visa.startsWith('E')],[0,'성년']], x.visa.startsWith('E') ? 0 : +x.minor)}
       ${sel('cc', '고객 국적', [['VNM','VNM 베트남'],['NPL','NPL 네팔'],['MNG','MNG 몽골']], x.cc)}
       ${sel('lang', '인증 화면 언어', [['vi','Tiếng Việt (vi)'],['en','English (en)'],['ko','한국어 (ko)'],['mn','Монгол (mn)'],['th','ไทย (th)'],['ja','日本語 (ja)'],['cn','简体中文 (cn)'],['tw','繁體中文 (tw)'],['ne','नेपाली — 미지원', true]], x.lang)}</div>
@@ -1209,52 +1564,78 @@ function Start() {
   + Card('4. 진행 중', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>고객번호</th><th>구분</th><th>국적</th><th>시작</th><th>상태</th></tr></thead><tbody>${pend.map(c => `<tr ${c.stage !== '인증 진행 중' ? `data-act="open-c" data-tx="${c.tx}"` : ''}><td class="mono">${c.tx}</td><td>${c.visa}${c.minor ? ' · 미성년' : ''}</td><td class="mono">${c.cc}</td><td class="num">${c.at.slice(11)}</td><td>${c.stage === '인증 진행 중' ? badge('인증 진행 중') : c.stage === '인증 실패' ? badge(`실패 · ${c.code}`, 'bad') : badge('성공 · 결과 수신', 'ok')}</td></tr>`).join('')}</tbody></table></div>`, { flush:true });
 }
 
-/* ---------- C4 제출 서류 발급 ---------- */
-function Issue(tx) {
-  const pool = CUST.filter(c => inScope(c.office) && ['서류 보완','발급 대기','개통 대기'].includes(c.stage));
-  const c = custBy(tx) && inScope(custBy(tx).office) ? custBy(tx) : pool.find(x => x.stage === '발급 대기') || pool[0];
-  if (!c) return PH('제출 서류 발급', '발급할 고객이 없습니다.');
-  const req = reqDocs(c), canEdit = ['head','master'].includes(S.role);
-  const items = S.order.filter(d => d === '여권 데이터 요약' || d === '여권 컬러 스캔본' || req.includes(d) || (d === '기타' && (c.files['기타'] || []).length));
-  const missing = req.filter(d => !(c.files[d] || []).length);
-  let pages = [], n = 0;
-  items.forEach(d => { if (d === '여권 데이터 요약') pages.push([d, c.tx, 'sum']); else if (d === '여권 컬러 스캔본') pages.push([d, '자동']); else { const fs = c.files[d] || []; if (!fs.length) pages.push([d, '미등록', 'miss']); else fs.forEach((f, i) => pages.push([fs.length > 1 ? `${d} ${i + 1}/${fs.length}` : d, ''])); } });
-  const fname = fileName(c);
-  return PH('제출 서류 발급', '여권 데이터와 업로드한 서류를 대리점이 정한 순서와 파일명으로 PDF 한 개로 합쳐 KT 제출용으로 내려받습니다.')
-  + `<div class="card" style="padding:14px 20px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="muted" style="font-size:13px">발급 대상</span>
-      <select class="select" data-act-change="issue-c" style="min-width:300px">${pool.map(x => `<option value="${x.tx}" ${x.tx === c.tx ? 'selected' : ''}>${x.tx} · ${esc(showName(x))} · ${x.stage}</option>`).join('')}</select>${badge(c.stage)}<a class="btn btn-sm btn-ghost" href="#/customer/${c.tx}" style="margin-left:auto">고객 상세 ${ic('chev')}</a></div>`
-  + `<div class="g2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)"><div style="display:grid;gap:16px;align-content:start">
-    ${Card('병합 순서', `<ol class="order" id="ord">${items.map((d, i) => { const miss = missing.includes(d); return `<li class="${miss ? 'miss' : ''}" ${canEdit ? `draggable="true" data-od="${esc(d)}"` : ''}>${canEdit ? ic('grip', 'grip') : ''}<span class="no">${i + 1}</span>${d}${d === '여권 데이터 요약' || d === '여권 컬러 스캔본' ? ' <span class="auto-t">자동</span>' : miss ? ' <span class="req-t">미등록</span>' : ''}
-        ${canEdit ? `<span class="mv"><button data-act="mv" data-d="${esc(d)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="위로">${ic('up')}</button><button data-act="mv" data-d="${esc(d)}" data-dir="1" ${i === items.length - 1 ? 'disabled' : ''} aria-label="아래로">${ic('down')}</button></span>` : ''}</li>`; }).join('')}</ol>
-      <p class="muted" style="font-size:12.5px;margin:10px 2px 0">${canEdit ? '끌어서 순서를 바꾸면 대리점 템플릿에 저장됩니다.' : '순서는 마스터(대리점 본사)가 템플릿으로 정합니다.'}</p>`, { sub:`현대인피니티 템플릿 · ${canEdit ? '편집 가능' : '읽기 전용'}` })}
-    ${Card('파일명', `<input class="input mono" id="fname" value="${esc(S.fname)}" style="width:100%" ${canEdit ? '' : 'disabled'}><div class="toks">${['{영업소}','{성}','{이름}','{인증번호}','{여권번호끝4}','{발급일}','{비자}'].map(t => `<button class="tokb" data-act="tok" data-t="${t}" ${canEdit ? '' : 'disabled'}>${t}</button>`).join('')}</div><div class="fname-out">→ ${esc(fname)}</div>`)}</div>
-    ${Card('미리보기', `<div class="pages">${pages.map((p, i) => `<div class="pg ${p[2] || ''}"><b>${esc(p[0])}</b>${p[1] ? `<span class="mono">${esc(p[1])}</span>` : ''}<i></i><i style="width:80%"></i><i style="width:60%"></i><i></i><i style="width:70%"></i><span class="no">${i + 1}</span></div>`).join('')}</div>
-      ${missing.length ? `<div class="callout bad" style="margin-top:16px">${ic('alert')}<div>필수 서류 ${missing.length}종(${missing.join(', ')})이 없어 발급할 수 없습니다.</div></div>` : !c.reviewed ? `<div class="callout warn" style="margin-top:16px">${ic('alert')}<div>검수가 끝나지 않았습니다. 고객 상세에서 검수 완료 후 발급하세요.</div></div>` : ''}
-      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">${missing.length ? `<a class="btn" href="#/customer/${c.tx}">${ic('upload')}고객 상세에서 올리기</a>` : ''}<span class="grow" style="flex:1"></span><button class="btn btn-p" data-act="issue" data-tx="${c.tx}" ${missing.length || !c.reviewed ? 'disabled' : ''}>${ic('pdf')}PDF 발급${c.stage === '개통 대기' ? ' (재발급)' : ''}</button></div>`, { sub:`${pages.length}쪽 예정` })}</div>`;
-}
 function fileName(c) {
   const sur = (c.name || 'DELETED').split(' ')[0], giv = (c.name || '').split(' ').slice(1).join('');
   return S.fname.replace(/\{영업소\}/g, ({ 'vn-hn':'HANOI', 'vn-hcm':'HOCHIMINH', 'vn-dn':'DANANG', 'np-ktm':'KATHMANDU', 'np-pkr':'POKHARA', 'mn-ub':'ULAANBAATAR' })[c.office]).replace(/\{성\}/g, sur).replace(/\{이름\}/g, giv)
     .replace(/\{인증번호\}/g, c.tx).replace(/\{여권번호끝4\}/g, (c.pfull || '').replace(/\D/g, '').slice(-4)).replace(/\{발급일\}/g, TODAY.replace(/-/g, '')).replace(/\{비자\}/g, c.visa);
 }
 
-/* ---------- D1 정산 관리 ---------- */
-function Settle() {
-  const [y, m] = S.month.split('-'), oct = S.month === '2026-10';
-  const nov = DAILY.slice(13).reduce((a, b) => a + b, 0) / sum(DAILY), octR = DAILY.slice(0, 13).reduce((a, b) => a + b, 0) / sum(DAILY);
-  const rows = [['현대인피니티','hi',701,652],['해외대리점 B','gb',211,194]].filter(r => S.role === 'head' || r[1] === 'hi').map(([n, id, t, o]) => {
-    const tries = oct ? (id === 'hi' ? 548 : 162) : Math.round(t * nov), ok = oct ? (id === 'hi' ? 510 : 149) : Math.round(o * nov);
-    const use = ok * 1100, bill = Math.max(use, 500000); return { n, tries, ok, fail:tries - ok, use, bill, admin:500000, tot:bill + 500000, minApplied:use < 500000 }; });
-  const T = k => rows.reduce((a, r) => a + r[k], 0);
-  return PH('정산 관리', '마스터(대리점)별 월 인증 집계와 청구 예정 금액입니다. 메뉴 구성은 시그니온 표준(내부) 관리자와 같게 맞출 예정입니다.', dpBtn('settle', '정산 월'))
-  + `<div class="kpis">${KPI(`${+m}월 인증 시도`, fmt(T('tries')), '건', oct ? '10-19 ~ 10-31' : '11-01 ~ 11-03 (집계 중)', 'scan', 'hero')}${KPI('인증 성공', fmt(T('ok')), '건', `성공률 ${pct(T('ok'), T('tries'))}%`, 'check')}${KPI('청구 예정 합계', fmt(T('tot')), '원', 'VAT 별도 · 성공 건 기준 가정', 'coins')}</div>`
-  + Card(`${y}년 ${+m}월 집계`, `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>마스터</th><th class="n">시도</th><th class="n">성공</th><th class="n">실패</th><th class="n">인증 사용료</th><th class="n">관리자 사용료</th><th class="n">청구 예정</th></tr></thead><tbody>
-      ${rows.map(r => `<tr><td class="strong">${r.n}</td><td class="n num">${fmt(r.tries)}</td><td class="n num">${fmt(r.ok)}</td><td class="n num">${fmt(r.fail)}</td><td class="n num">${fmt(r.bill)}원${r.minApplied ? '<span class="sub" style="color:var(--warn)">월 최소이용금액 적용</span>' : ''}</td><td class="n num">${fmt(r.admin)}원</td><td class="n num strong">${fmt(r.tot)}원</td></tr>`).join('')}</tbody>
-      ${rows.length > 1 ? `<tfoot><tr><td>합계</td><td class="n num">${fmt(T('tries'))}</td><td class="n num">${fmt(T('ok'))}</td><td class="n num">${fmt(T('fail'))}</td><td class="n num">${fmt(T('bill'))}원</td><td class="n num">${fmt(T('admin'))}원</td><td class="n num">${fmt(T('tot'))}원</td></tr></tfoot>` : ''}</table></div>`, { flush:true, style:'margin-bottom:16px', sub:oct ? '시범 운영 10-19 ~ 10-31' : '집계 중' })
-  + `<div class="g2e">${Card('과금 항목', `<dl class="kv"><dt>여권 인증비</dt><dd>1,100원 / 건 · 월 최소 50만원 (KT 감면 시 30만원)</dd><dt>관리자 사용료</dt><dd>500,000원 / 월 · 대리점 본사 단위 (12계정 기본)</dd><dt>계정 추가</dt><dd>총괄 100,000원 · 서브 50,000원 / 월</dd><dt>과금 기준</dt><dd><span class="badge t-warn">${ic('alert')}확정 필요</span> 시도 / 성공 / 개통 중 — 화면은 성공 건 기준 가정</dd><dt>청구 단위 · 주기</dt><dd>KT / 대리점, 월 단위 — 확정 필요</dd></dl>`, { sub:'SIGNION KT 통합관리자시스템 기능 구성 (과금체계) 기준' })}
-    ${Card('메뉴 구성', `<p class="ink2" style="margin:0;font-size:13px;line-height:1.7">시그니온 표준(내부) 관리자의 정산 메뉴(인증수수료 생성 · 청구자료 작성 · 입금 등록 · 미수금)와 같게 둡니다. 파트너 관리자에서는 조회와 거래명세서 확인만 제공하는 것을 제안합니다.</p>`)}</div>`;
+/* ---------- 대리점 선택 (KT 헤드마스터 전용) ---------- */
+const agPick = () => S.role === 'head' ? `<select class="select" id="agSel" aria-label="대리점">${Object.values(AG).map(a => `<option value="${a.id}" ${S.ag === a.id ? 'selected' : ''}>${esc(a.name)} · ${a.code}</option>`).join('')}</select>` : '';
+const roTag = `<span class="ro-tag">${ic('lock')}읽기 전용 · KT 내부 어드민 설정</span>`;
+const won = n => `${fmt(n)}원`;
+function meter(used, max, unit, opt = {}) {
+  const p = Math.min(100, used / max * 100), cls = used >= max ? 'bad' : (max - used) / max <= .1 ? 'warn' : '', f = opt.f || fmt;
+  return `<div class="meter ${cls}"><div class="mt"><b>${f(used)}</b><span>/ ${f(max)}${unit}</span><span class="r">${cls === 'bad' ? badge(opt.overT || '한도 도달', 'bad') : cls === 'warn' ? badge(`잔여 ${(100 - p).toFixed(1)}%`, 'warn') : `${p.toFixed(1)}% 사용`}</span></div>
+    <div class="trk"><i style="width:${p.toFixed(1)}%"></i>${opt.mark ? '<span class="mk" style="left:90%" title="잔여 10% 경고선"></span>' : ''}</div>${opt.sub ? `<div class="ms">${opt.sub}</div>` : ''}</div>`;
 }
 
+/* ---------- 이용 현황 (월 이용 현황 · 확장팩) ---------- */
+function Usage() {
+  const ag = myAg(), A = AG[ag], s = agState(ag), u = useM(ag), need = needPacks(ag), m = S.role === 'master';
+  const months = Object.keys(USE[ag]).filter(k => /^\d{4}-\d{2}$/.test(k)).sort().reverse();
+  const ev = UEV.filter(e => e.ag === ag).slice(0, 10);
+  const gb = v => (+v).toFixed(2);
+  return PH('이용 현황', `${esc(A.name)} (${A.code}) · ${CUR_M.replace('-', '년 ')}월 현재 · ${S.role === 'head' ? 'KT 헤드마스터 — 전체 대리점 조회' : '다른 대리점 정보는 조회할 수 없습니다'}`, agPick())
+  + `<div class="lim-grid">
+    ${Card('문서 처리 (이번 달)', meter(s.used, s.L.docs, '건', { overT:'월 한도 도달 · 처리 제한', sub:`<span>업로드 <b>${fmt(u.up)}</b></span><span>재업로드 <b>${fmt(u.reup)}</b></span><span>다운로드 <b>${fmt(u.dl)}</b></span><span>잔여 <b>${fmt(s.docLeft)}</b>건</span>` }), { sub:'성공 건만 · 목록 조회 제외' })}
+    ${Card('동시 보관 용량 (현재)', meter(s.stor, s.L.gb, 'GB', { f:gb, mark:true, overT:'초과 · 업로드/다운로드 차단', sub:`<span>잔여 <b>${s.gbLeft.toFixed(2)}</b>GB</span><span>고객정보 · 제출 문서 · 여권인증 정보 합계</span>` }), { sub:'삭제 · 만료 시 차감' })}
+    ${Card('확장팩 (이번 달)', `<div class="meter"><div class="mt"><b>${s.L.packs}</b><span>팩 적용 중</span><span class="r">${need.n ? badge(`필요 ${need.n}팩`, 'bad') : badge('추가 필요 없음', 'ok')}</span></div>
+      <div class="ms"><span>기본 한도 <b>${fmt(A.docLimit)}</b>건 · <b>${A.storGB}</b>GB</span><span>팩 추가 <b>+${fmt(s.L.packs * A.pack.docs)}</b>건 · <b>+${s.L.packs * A.pack.gb}</b>GB</span></div>
+      <div style="margin-top:6px">${m ? `<button class="btn ${need.n || s.warn ? 'btn-p' : ''}" data-act="pack-open">${ic('plus')}확장팩 신청</button>` : `<p class="muted" style="margin:0;font-size:12.5px">${S.role === 'head' ? '확장팩은 대리점 마스터가 직접 신청합니다 (KT 승인 절차 없음).' : '확장팩은 마스터 관리자만 신청할 수 있습니다. 한도가 부족하면 마스터 관리자에게 요청하세요.'}</p>`}</div></div>`, { sub:`팩당 ${won(A.pack.price)} · +${fmt(A.pack.docs)}건 · +${A.pack.gb}GB` })}
+  </div>`
+  + `<div class="g2">${Card('월별 문서 처리', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>월</th><th class="n">업로드</th><th class="n">재업로드</th><th class="n">다운로드</th><th class="n">합계</th><th class="n">한도</th><th class="n">확장팩</th></tr></thead><tbody>${months.map(k => { const x = USE[ag][k], t = x.up + x.reup + x.dl, L = lim(ag, k); return `<tr><td class="num strong">${k}${k === CUR_M ? ' <span class="badge t-info">집계 중</span>' : ''}</td><td class="n num">${fmt(x.up)}</td><td class="n num">${fmt(x.reup)}</td><td class="n num">${fmt(x.dl)}</td><td class="n num strong">${fmt(t)}</td><td class="n num">${fmt(L.docs)}</td><td class="n num">${L.packs || '—'}</td></tr>`; }).join('')}</tbody></table></div>`, { flush:true, sub:'실패 작업 제외' })}
+    ${Card('필요 팩 산정', `<dl class="kv"><dt>문서 처리 초과분</dt><dd class="num">${fmt(Math.max(0, s.used - s.L.docs))}건 → ${need.byDoc}팩</dd><dt>보관 용량 초과분</dt><dd class="num">${Math.max(0, s.stor - s.L.gb).toFixed(2)}GB → ${need.byGb}팩</dd><dt>안내 수량</dt><dd><b>${need.n}팩</b> <span class="muted" style="font-size:12px">둘 중 큰 수량 · 중복 산정 없음</span></dd></dl>
+      <p class="muted" style="font-size:12.5px;margin:12px 0 0">자동 구매는 없습니다. 마스터가 신청할 때만 적용 · 과금됩니다.</p>`)}</div>`
+  + `<div style="display:grid;gap:16px;margin-bottom:16px">${Card('확장팩 신청 · 적용 이력', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>신청 · 적용 일시</th><th>신청자</th><th class="n">수량</th><th>추가 한도</th><th class="n">청구</th><th>청구월</th></tr></thead><tbody>${PACKS.filter(p => p.ag === ag).slice().reverse().map(p => `<tr><td class="num">${p.at}</td><td class="mono">${p.by}</td><td class="n num">${p.qty}</td><td>+${fmt(p.docs * p.qty)}건 · +${p.gb * p.qty}GB</td><td class="n num">${won(p.price * p.qty)}</td><td class="num">${p.m}</td></tr>`).join('') || `<tr><td colspan="6"><div class="empty">${ic('coins')}<div>신청 이력이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:'신청 즉시 적용 · 승인 절차 없음' })}
+    ${Card('최근 처리 · 용량 증감', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>일시</th><th>구분</th><th>계정</th><th>대상</th><th class="n">용량</th></tr></thead><tbody>${ev.map(e => `<tr><td class="num">${e.at.slice(5)}</td><td>${e.kind}</td><td class="mono">${e.who}</td><td>${esc(e.target)}</td><td class="n num" style="color:${e.mb < 0 ? 'var(--ok)' : 'inherit'}">${e.mb ? (e.mb > 0 ? '+' : '') + e.mb.toFixed(1) + 'MB' : '—'}</td></tr>`).join('') || `<tr><td colspan="5"><div class="empty">${ic('log')}<div>이벤트가 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:'문서 원본 · 여권정보는 기록하지 않음' })}</div>`
+  + `<div class="callout info">${ic('help')}<div style="flex:1"><b>프로토타입 전용 — 한도 시나리오</b><br>경고 · 차단 · 해제 흐름을 확인합니다. <span class="seg" style="margin-left:8px;vertical-align:middle">${[['ok','정상'],['warn','용량 잔여 10% 이하'],['over','용량 초과'],['full','처리 한도 도달']].map(([k, l]) => `<button data-act="scn" data-s="${k}">${l}</button>`).join('')}</span></div></div>`;
+}
+
+/* ---------- 계약 · 요금 (적용 조건 조회 · 읽기 전용) ---------- */
+function Contract() {
+  const ag = myAg(), A = AG[ag], cnt = lv => ACCTS.filter(x => agOf(x.org) === ag && x.lv === lv).length;
+  const daysLeft = diffD(TODAY, A.term[1]);
+  return PH('계약 · 요금', `KT 내부 어드민에서 대리점 ID(${A.code})별로 설정한 조건이 자동 반영됩니다. 고객사에서 임의로 수정할 수 없습니다.`, `${agPick()}${roTag}`)
+  + `<div class="g3">${Card('계약', `<dl class="kv"><dt>대리점</dt><dd>${esc(A.name)} <span class="mono muted">${A.code}</span></dd><dt>계약 기간</dt><dd class="num">${A.term[0]} ~ ${A.term[1]}</dd><dt>남은 기간</dt><dd>${daysLeft > 60 ? `${fmt(daysLeft)}일` : badge(`${daysLeft}일 · 갱신 확인`, 'warn')}</dd><dt>최종 변경</dt><dd class="num">${A.updated}</dd></dl>`)}
+    ${Card('월 요금', `<dl class="kv"><dt>플랫폼 월 기본료</dt><dd class="num">${won(A.base)}</dd><dt>여권인증 건당 단가</dt><dd class="num">${won(A.unit)}</dd><dt>월 최소 사용료</dt><dd class="num">${won(A.min)}</dd><dt>인증료 산식</dt><dd>MAX(결과 산출 건수 × 건당 단가, 월 최소 사용료)</dd></dl>`, { sub:'VAT 별도' })}
+    ${Card('이용 한도', `<dl class="kv"><dt>문서 월 처리 한도</dt><dd class="num">${fmt(A.docLimit)}건 / 월</dd><dt>동시 보관 용량</dt><dd class="num">${A.storGB}GB</dd><dt>집계 기준</dt><dd>업로드 · 재업로드 · 다운로드 각 1건</dd></dl>`)}</div>`
+  + `<div class="g2e">${Card('관리자 계정', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>위계</th><th class="n">기본 제공</th><th class="n">현재 계정</th><th class="n">유료 추가</th><th class="n">추가 계정 단가 (월)</th></tr></thead><tbody>${['master','general','sub'].map(lv => { const n = cnt(lv), b = A.basic[lv]; return `<tr><td>${tierB(lv)}</td><td class="n num">${b}</td><td class="n num">${n}</td><td class="n num">${Math.max(0, n - b) || '—'}</td><td class="n num">${A.extra[lv] ? won(A.extra[lv]) : '—'}</td></tr>`; }).join('')}</tbody></table></div>`, { flush:true, sub:'설정 조건은 대리점 전체 계정에 동일 적용' })}
+    ${Card('확장팩', `<dl class="kv"><dt>팩 단가</dt><dd class="num">${won(A.pack.price)} / 팩</dd><dt>팩당 추가 문서</dt><dd class="num">+${fmt(A.pack.docs)}건</dd><dt>팩당 추가 용량</dt><dd class="num">+${A.pack.gb}GB</dd><dt>적용 · 과금</dt><dd>마스터 신청 즉시 적용 · 신청 월 전액 과금 · 일할계산 없음</dd></dl>`)}</div>`
+  + Card('과금 기준', `<ul style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.9;color:var(--ink-2)">
+      <li><b>여권인증</b> — 정상적으로 결과가 산출된 건은 성공 · 실패 모두 1건. 결과가 산출되지 않은 요청(중도 이탈 · 통신 오류)은 제외.</li>
+      <li><b>유료 추가 계정</b> — 생성 · 로그인만으로는 과금하지 않음. 그 달 최초로 고객정보 · 문서를 조회 · 처리하면 해당 월 이용료 전액 과금. 사용 후 같은 달에 삭제 · 중지해도 환불 없음. 사용하지 않고 삭제한 계정은 과금 없음.</li>
+      <li><b>기본 제공 계정 교체</b> — 기본 제공 수량 안에서의 교체는 중복 청구하지 않음. 같은 달 서로 다른 유료 추가 계정을 썼다면 계정별로 과금.</li>
+      <li><b>확장팩</b> — 마스터 신청 즉시 한도 확대 · 차단 해제, 신청 월 전액 과금. 자동 구매 없음.</li></ul>`);
+}
+
+/* ---------- 월 이용료 (정산서 조회 · 다운로드) ---------- */
+function Settle() {
+  const ag = myAg(), A = AG[ag], M = S.month, [y, mm] = M.split('-'), st = statement(ag, M), done = st.st.st === '확정';
+  const users = USE_LOG.filter(u => u.ag === ag && u.m === M);
+  const head = S.role === 'head' ? Card(`${y}년 ${+mm}월 대리점별 청구`, `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>대리점</th><th>상태</th><th class="n">공급가액</th><th class="n">VAT</th><th class="n">총 청구금액</th></tr></thead><tbody>${Object.values(AG).map(a => { const x = statement(a.id, M); return `<tr data-act="pick-ag" data-ag="${a.id}" class="${a.id === ag ? 'sel' : ''}"><td class="strong">${esc(a.name)} <span class="mono muted">${a.code}</span></td><td>${badge(x.st.st, x.st.st === '확정' ? 'ok' : 'info')}</td><td class="n num">${won(x.supply)}</td><td class="n num">${won(x.vat)}</td><td class="n num strong">${won(x.total)}</td></tr>`; }).join('')}</tbody></table></div>`, { flush:true, style:'margin-bottom:16px', sub:'행을 누르면 그 대리점 정산서를 봅니다' }) : '';
+  return PH('월 이용료', `${esc(A.name)} (${A.code}) · 내부 어드민에서 설정한 계약별 과금조건과 확정된 이용 로그로 산정합니다.`, `${agPick()}${dpBtn('settle', '정산 월')}<button class="btn" data-act="stmt-dl">${ic('download')}정산서 내려받기</button>`)
+  + `<div class="kpis">${KPI('공급가액', fmt(st.supply), '원', `${st.rows.length}개 항목`, 'coins', 'hero')}${KPI('부가세 (10%)', fmt(st.vat), '원', '공급가액 × 10%', '')}${KPI('총 청구금액', fmt(st.total), '원', done ? `확정 · ${st.st.at}` : '월 마감 전 예정 금액', 'check')}${KPI('여권인증 (결과 산출)', fmt(st.n), '건', st.minAp ? '월 최소료 적용' : '실사용료 적용', 'scan')}</div>`
+  + head
+  + Card(`${y}년 ${+mm}월 정산서 ${badge(st.st.st, done ? 'ok' : 'info')}`, `<div class="tbl-wrap"><table class="tbl stmt"><thead><tr><th>구분</th><th>정산 항목</th><th class="n">수량</th><th class="n">적용 단가</th><th class="n">청구금액</th><th>적용 기준 및 비고</th></tr></thead><tbody>
+      ${st.rows.map(r => `<tr><td class="g">${r.g}</td><td class="strong">${r.n}</td><td class="n num">${fmt(r.q)}</td><td class="n num">${won(r.u)}</td><td class="n num strong">${won(r.amt)}</td><td class="note">${esc(r.note)}${r.minAp ? ' ' + badge('최소료 적용', 'warn') : ''}</td></tr>`).join('')}
+      <tr class="tot"><td></td><td>공급가액</td><td></td><td></td><td class="n num">${won(st.supply)}</td><td></td></tr>
+      <tr class="tot"><td></td><td>부가세 (10%)</td><td></td><td></td><td class="n num">${won(st.vat)}</td><td></td></tr>
+      <tr class="tot grand"><td></td><td>총 청구금액</td><td></td><td></td><td class="n num">${won(st.total)}</td><td></td></tr></tbody></table></div>`, { flush:true, style:'margin-bottom:16px', sub:'필수 2개 항목은 매월 · 선택 항목은 과금 발생 월에만 표시' })
+  + `<div class="g2e">${Card('추가 관리자 계정 과금 근거', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>계정</th><th>위계</th><th>최초 실제 이용</th><th>이용 내용</th><th>현재 상태</th></tr></thead><tbody>${users.map(u => { const ac = ACCTS.find(x => x.id === u.acct); return `<tr><td class="mono">${u.acct}</td><td>${tierB(u.lv)}</td><td class="num">${u.at}</td><td>${esc(u.what)}</td><td>${ac ? badge(ac.status) : badge('삭제됨 · 과금 유지', '')}</td></tr>`; }).join('') || `<tr><td colspan="5"><div class="empty">${ic('users')}<div>이 달에 과금된 추가 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:'생성 · 로그인만으로는 미과금' })}
+    ${Card('마감 · 정정 이력', `<dl class="kv"><dt>정산 상태</dt><dd>${done ? `월 마감 확정 · ${st.st.at}` : `집계 중 · ${y}년 ${+mm}월 말일 마감 후 확정`}</dd><dt>정정 이력</dt><dd>${st.st.fix.length ? st.st.fix.join('<br>') : '없음'}</dd><dt>확장팩</dt><dd>${packsOf(ag, M).map(p => `${p.at} · ${p.qty}팩 (${p.by})`).join('<br>') || '신청 없음'}</dd></dl>
+      <p class="muted" style="font-size:12.5px;margin:12px 0 0">금액은 내부 어드민의 대리점별 설정값으로 계산합니다. 확정된 정산서의 정정은 KT 내부 어드민에서만 할 수 있습니다.</p>`)}</div>`;
+}
 /* ---------- E1 계정 관리 ---------- */
 function findOrg(n, id) { if (n.id === id) return n; for (const k of n.c || []) { const f = findOrg(k, id); if (f) return f; } return null; }
 function Accounts() {
@@ -1263,22 +1644,53 @@ function Accounts() {
   const rootN = findOrg(ORG, sc) || ORG;
   const draw = n => `<li><button class="nd ${n.id === sel ? 'on' : ''}" data-act="tree" data-o="${n.id}">${tierB(n.lv)}${esc(n.name)}</button>${n.c ? `<ul>${n.c.map(draw).join('')}</ul>` : ''}</li>`;
   const list = ACCTS.filter(a => under(a.org) && (S.role === 'head' || a.org !== sc));
-  const rows = list.map(a => { const mine = a.lv === next;
-    return `<tr><td class="mono">${a.id}</td><td class="strong">${esc(a.name)}</td><td>${tierB(a.lv)}</td><td>${esc(a.orgName)}</td><td>${badge(a.status)}</td><td class="num">${a.last.slice(5)}</td><td class="n num">${a.cust || '—'}</td>
-      <td>${mine ? `<div style="display:flex;gap:4px">${a.status === '잠금' ? `<button class="btn btn-sm" data-act="unlock" data-id="${a.id}">${ic('unlock')}잠금 해제</button>` : ''}<button class="btn btn-sm" data-act="acc-edit" data-id="${a.id}">${ic('edit')}수정</button><button class="btn btn-sm btn-d" data-act="acc-del" data-id="${a.id}" aria-label="${a.id} 삭제">${ic('trash')}</button></div>` : '<span class="muted" style="font-size:12px">조회만</span>'}</td></tr>`; }).join('');
-  return PH('계정 관리', '내 아래 조직의 관리자 계정을 발급 · 수정 · 삭제하고, 잠금을 풀고, 그 아래 계정을 모니터링합니다. 발급은 바로 아래 한 단계만 가능합니다.',
-    `<button class="btn btn-p" data-act="acc-new" ${next ? '' : 'disabled'}>${ic('plus')}${next ? LV[next] + ' 계정 발급' : '발급 권한 없음'}</button>`)
+  const isM = S.role === 'master';
+  const billCell = a => { if (!a.paid) return '<span class="basic-t">기본 제공</span>'; const u = usedThisMonth(a.id);
+    return `<span class="paid-t">유료 추가</span><span class="sub">${u ? `${CUR_M.slice(5)}월 과금 · 최초 이용 ${u.at.slice(5)}` : `${CUR_M.slice(5)}월 미과금 (미사용)`}</span>`; };
+  const rows = list.map(a => { const mine = isM ? a.lv !== 'master' : S.role === 'head' && a.lv === 'master';
+    return `<tr class="${a.status === '중지' ? 'off' : ''}"><td class="mono">${a.id}</td><td class="strong">${esc(a.name)}</td><td>${tierB(a.lv)}</td><td>${esc(a.orgName)}</td><td>${billCell(a)}</td><td>${badge(a.status)}</td><td class="num">${a.last === '—' ? '—' : a.last.slice(5)}</td><td class="n num">${a.cust || '—'}</td>
+      <td>${mine ? `<div style="display:flex;gap:4px">${a.status === '잠금' ? `<button class="btn btn-sm" data-act="unlock" data-id="${a.id}">${ic('unlock')}잠금 해제</button>` : ''}${a.paid && !usedThisMonth(a.id) && a.status !== '중지' ? `<button class="btn btn-sm btn-ghost" data-act="acc-use" data-id="${a.id}" title="프로토타입 전용: 이 계정이 고객정보를 처음 조회했다고 가정">${ic('eye')}첫 이용(데모)</button>` : ''}<button class="btn btn-sm" data-act="acc-edit" data-id="${a.id}">${ic('edit')}수정</button>${isM ? `<button class="btn btn-sm" data-act="acc-stop" data-id="${a.id}">${a.status === '중지' ? '재개' : '중지'}</button>` : ''}<button class="btn btn-sm btn-d" data-act="acc-del" data-id="${a.id}" aria-label="${a.id} 삭제">${ic('trash')}</button></div>` : '<span class="muted" style="font-size:12px">조회만</span>'}</td></tr>`; }).join('');
+  const ag = S.role === 'head' ? null : myAg(), A = ag && AG[ag];
+  const quota = A ? `<div class="kpis">${['master','general','sub'].map(lv => { const n = ACCTS.filter(x => agOf(x.org) === ag && x.lv === lv).length, b = A.basic[lv], p = Math.max(0, n - b);
+      return KPI(`${LV[lv]} 계정`, `${n}`, `/ 기본 ${b}`, p ? `유료 추가 ${p}개 · ${won(A.extra[lv])}/월 (이용 월만)` : `기본 제공 잔여 ${b - n}개`, 'users'); }).join('')}</div>` : '';
+  return PH('계정 관리', isM ? '소속 관리자(총괄 · 서브) 계정을 생성 · 중지 · 삭제합니다. 기본 제공 수량을 넘는 계정은 유료 추가 계정이며, 그 달 처음 고객정보 · 문서를 조회 · 처리할 때 당월 이용료가 부과됩니다.' : '전체 대리점의 관리자 계정을 조회하고, 대리점 마스터 계정을 발급합니다.',
+    `<button class="btn btn-p" data-act="acc-new" ${next ? '' : 'disabled'}>${ic('plus')}${isM ? '관리자 계정 생성' : '마스터 계정 발급'}</button>`)
+  + quota
   + `<div class="grid-e1">${Card('조직', `<ul class="tree">${draw(rootN)}</ul>`)}
-    ${Card('관리자 계정', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>아이디</th><th>이름</th><th>위계</th><th>소속</th><th>상태</th><th>최근 로그인</th><th class="n">등록 고객</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="8"><div class="empty">${ic('users')}<div>이 조직 아래 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:`${list.length}개 · ${esc(findOrg(ORG, sel)?.name || '')}` })}</div>`;
+    ${Card('관리자 계정', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>아이디</th><th>이름</th><th>위계</th><th>소속</th><th>구분 · 당월 과금</th><th>상태</th><th>최근 로그인</th><th class="n">담당 고객</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="9"><div class="empty">${ic('users')}<div>이 조직 아래 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:`${list.length}개 · ${esc(findOrg(ORG, sel)?.name || '')}` })}</div>`;
+}
+/* 계정 생성 모달 — 마스터: 총괄 · 서브 / 헤드마스터: 마스터. 유료 추가 계정이면 과금 안내 팝업 확인 후 생성 */
+const PAID_NOTICE = '해당 계정은 기본 제공 수량을 초과한 유료 관리자 계정입니다. 계정 생성만으로는 과금되지 않으며, 최초 고객정보·문서 조회 또는 처리 시 월 이용료가 부과됩니다. 해당 월 중 계정을 삭제하거나 비활성화하더라도 당월 이용료는 환불되지 않습니다.';
+function accNew(lv, keep = {}) {
+  const lvs = S.role === 'head' ? ['master'] : ['general','sub']; lv = lvs.includes(lv) ? lv : lvs[0];
+  const base = S.role === 'head' ? ORG : findOrg(ORG, scope()), orgs = []; (function walk(n) { if (n.lv === lv) orgs.push(n); (n.c || []).forEach(walk); })(base);
+  const ag = S.role === 'head' ? null : myAg(), A = ag && AG[ag], n = ag ? ACCTS.filter(x => agOf(x.org) === ag && x.lv === lv).length : 0, paid = !!A && n >= A.basic[lv];
+  openModal(MH(`${LV[lv]} 계정 생성`, '입력한 메일로 초기 비밀번호 설정 안내가 갑니다. 로그인할 때마다 이 메일로 인증번호를 받습니다.') + `<div class="m-b">
+    ${lvs.length > 1 ? `<div class="fld" style="margin-bottom:12px"><label>위계</label><span class="seg">${lvs.map(l => `<button type="button" class="${l === lv ? 'on' : ''}" data-act="acc-lv" data-lv="${l}">${LV[l]}</button>`).join('')}</span></div>` : ''}
+    ${A ? `<div class="callout ${paid ? 'warn' : 'info'}" style="margin-bottom:14px">${ic(paid ? 'coins' : 'check')}<div>${LV[lv]} 기본 제공 ${A.basic[lv]}개 중 ${Math.min(n, A.basic[lv])}개 사용 중 — ${paid ? `이 계정은 <b>유료 추가 계정</b>입니다 (월 ${won(A.extra[lv])}, 실제 이용한 달만 과금).` : '기본 제공 수량 안에서 생성됩니다 (추가 비용 없음).'}</div></div>` : ''}
+    <div class="fgrid"><div class="fld full"><label for="iOrg">소속<span class="req">*</span></label><select class="select" id="iOrg" style="width:100%">${orgs.map(o => `<option value="${o.id}" ${keep.org === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}</select></div>
+    <div class="fld"><label for="iName">이름<span class="req">*</span></label><input class="input" id="iName" value="${esc(keep.name || '')}" style="width:100%"></div><div class="fld"><label for="iId">아이디<span class="req">*</span></label><input class="input mono" id="iId" value="${esc(keep.id || '')}" style="width:100%"></div>
+    <div class="fld full"><label for="iMail">메일 (인증번호 수신)<span class="req">*</span></label><input class="input" id="iMail" type="email" value="${esc(keep.mail || '')}" style="width:100%"></div></div></div>` + okBtns(paid ? '다음' : '생성'), () => {
+    const v = { org:$('#iOrg').value, name:$('#iName').value.trim(), id:$('#iId').value.trim(), mail:$('#iMail').value.trim() };
+    if (!v.name || !v.id || !/^\S+@\S+\.\S+$/.test(v.mail)) { toast('이름 · 아이디 · 메일을 확인하세요.', true); return; } if (ACCTS.some(x => x.id === v.id)) { toast('이미 있는 아이디입니다.', true); return; }
+    const create = consent => { ACCTS.push({ id:v.id, name:v.name, lv, org:v.org, orgName:findOrg(ORG, v.org)?.name || '', status:'정상', last:'—', cust:0, mail:v.mail, paid, consent });
+      addLog('계정 발급', `${v.id} (${LV[lv]}${paid ? ' · 유료 추가' : ''})${consent ? ` · 과금 안내 확인 ${consent.at} ${consent.by}` : ''}`); closeModal(); render(); toast(`${v.id} 계정을 생성했습니다 · 안내 메일 발송`); };
+    if (!paid) { create(null); return; }
+    /* 과금 안내 팝업 — 취소 · 확인 후 계정 생성 / 확인 일시 · 확인자 기록 */
+    openModal(MH('유료 관리자 계정 안내', `${esc(v.id)} · ${LV[lv]} · 월 ${won(A.extra[lv])}`) + `<div class="m-b"><div class="notice-box">${PAID_NOTICE}</div><p class="muted" style="font-size:12.5px;margin:12px 0 0">확인 일시와 확인자(${me().id})가 기록됩니다.</p></div>`
+      + `<div class="m-f"><button class="btn" data-act="acc-back">취소</button><button class="btn btn-p" data-act="modal-ok">확인 후 계정 생성</button></div>`, () => create({ at:`${TODAY} ${nowT()}`, by:me().id }));
+    MD.back = () => accNew(lv, v);
+  });
+  MD.keep = () => ({ org:$('#iOrg')?.value, name:$('#iName')?.value, id:$('#iId')?.value, mail:$('#iMail')?.value });
 }
 
 /* ---------- F1 개인정보 보관 ---------- */
 function Retention() {
   const edit = ['head','master'].includes(S.role);
-  const due = CUST.filter(c => inScope(c.office) && !isGone(c) && c.stage !== '인증 실패').map(c => ({ c, until:addD(c.at.slice(0, 10), S.retention) })).filter(x => diffD(TODAY, x.until) <= 7).sort((a, b) => a.until.localeCompare(b.until));
+  const due = CUST.filter(c => canSee(c) && !isGone(c) && c.stage !== '인증 실패').map(c => ({ c, until:addD(c.at.slice(0, 10), S.retention) })).filter(x => diffD(TODAY, x.until) <= 7).sort((a, b) => a.until.localeCompare(b.until));
   return PH('개인정보 보관', '어디에 얼마 동안 두는지 정하고, 기한이 끝나거나 개통이 끝난 고객의 개인정보를 자동으로 지웁니다.')
-  + `<div class="g3">${Card('보관 장소', `<dl class="kv"><dt>마스터</dt><dd>한국 서버 · 양사 계약 기간까지</dd><dt>총괄 · 서브</dt><dd>클라우드 · 마스터 지정 기간까지</dd></dl><div class="callout warn" style="margin-top:14px">${ic('alert')}<div>「한국 서버」·「클라우드」 서버 위치 확정 필요</div></div>`)}
-    ${Card('보관 기간', `<dl class="kv"><dt>운영 · 거래 로그</dt><dd>3년 (개인정보 없음)</dd><dt>개통 완료</dt><dd>즉시 삭제</dd><dt>미개통</dt><dd><span class="stepper"><button data-act="ret" data-n="-5" ${edit && S.retention > 5 ? '' : 'disabled'} aria-label="5일 줄이기">−</button><input id="retd" value="${S.retention}" inputmode="numeric" ${edit ? '' : 'disabled'} aria-label="미개통 보관 일수"><button data-act="ret" data-n="5" ${edit && S.retention < 90 ? '' : 'disabled'} aria-label="5일 늘리기">+</button></span> 일 후 삭제</dd></dl>
+  + `<div class="g3">${Card('보관 장소', `<dl class="kv"><dt>저장 위치</dt><dd>클라우드에만 저장 (고객정보 · 여권인증 정보 · 제출 문서)</dd><dt>삭제 시</dt><dd>대리점 동시 보관 용량에서 즉시 차감</dd><dt>백업</dt><dd>클라우드 정기 백업 · 장애 시 복구 (주기 · 보관기간은 기술팀 설계)</dd></dl>`)}
+    ${Card('보관 기간', `<dl class="kv"><dt>운영 · 거래 로그</dt><dd>3년 (개인정보 없음)</dd><dt>개통 완료</dt><dd>즉시 삭제</dd><dt>미개통</dt><dd>최대 2개월(60일) · <span class="stepper"><button data-act="ret" data-n="-5" ${edit && S.retention > 5 ? '' : 'disabled'} aria-label="5일 줄이기">−</button><input id="retd" value="${S.retention}" inputmode="numeric" ${edit ? '' : 'disabled'} aria-label="미개통 보관 일수"><button data-act="ret" data-n="5" ${edit && S.retention < 60 ? '' : 'disabled'} aria-label="5일 늘리기">+</button></span> 일 후 삭제</dd></dl>
       ${edit ? `<button class="btn btn-sm btn-p" data-act="ret-save" style="margin-top:14px">저장</button>` : '<p class="muted" style="font-size:12.5px;margin:12px 0 0">마스터만 바꿀 수 있습니다.</p>'}`)}
     ${Card('자동 삭제 배치', `<dl class="kv"><dt>실행</dt><dd class="num">매일 03:00</dd><dt>최근 실행</dt><dd class="num">11-03 03:00 · 5건</dd><dt>다음 실행</dt><dd class="num">11-04 03:00</dd></dl>`)}</div>`
   + Card('7일 안에 삭제될 고객', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>인증번호</th><th>단계</th><th>영업소</th><th>등록일</th><th>보관기한</th><th>남은 기간</th></tr></thead><tbody>${due.length ? due.map(({ c, until }) => { const left = diffD(TODAY, until); return `<tr data-act="open-c" data-tx="${c.tx}"><td class="mono">${c.tx}</td><td>${badge(c.stage)}</td><td>${OFFICE[c.office]}</td><td class="num">${c.at.slice(0, 10)}</td><td class="num">${until}</td><td>${left < 0 ? badge('기한 경과 · 다음 배치 삭제', 'bad') : badge(`D-${left}`, left <= 2 ? 'bad' : 'warn')}</td></tr>`; }).join('') : `<tr><td colspan="6"><div class="empty">${ic('check')}<div>7일 안에 기한이 끝나는 고객이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:`미개통 ${S.retention}일 기준 · 현재 범위 ${due.length}명` });
@@ -1287,9 +1699,10 @@ function Retention() {
 /* ---------- F2 관리자 사용 로그 ---------- */
 function Logs() {
   const [a, b] = S.range.logs, f = S.logs;
-  const rows = LOGS.filter(l => (l.scope === 'kt' ? S.role === 'head' : inScope(l.scope)) && l.dt.slice(0, 10) >= a && l.dt.slice(0, 10) <= b
+  const logOk = l => S.role === 'sub' ? l.id === me().id : l.scope === 'kt' ? S.role === 'head' : inScope(l.scope);
+  const rows = LOGS.filter(l => logOk(l) && l.dt.slice(0, 10) >= a && l.dt.slice(0, 10) <= b
     && (!f.kind || LOG_KIND[f.kind].test(l.act)) && (!f.acct || l.id === f.acct) && (!f.ip || l.ip.includes(f.ip)));
-  const accts = [...new Set(LOGS.filter(l => l.scope === 'kt' ? S.role === 'head' : inScope(l.scope)).map(l => l.id))];
+  const accts = [...new Set(LOGS.filter(logOk).map(l => l.id))];
   const tone = act => /실패|잠금$/.test(act) ? 'bad' : /해제|삭제|원문/.test(act) ? 'warn' : '';
   return PH('관리자 사용 로그', '누가 언제 어디서 무엇을 했는지 남깁니다. 로그는 고칠 수도 지울 수도 없고, 개인정보 대신 인증번호만 기록합니다.')
   + `<section class="card"><div class="tb">${dpBtn('logs', '로그 기간')}
@@ -1360,21 +1773,56 @@ const okBtns = (ok, danger) => `<div class="m-f"><button class="btn" data-act="c
 function downloadCSV(name, rows) { const blob = new Blob(['﻿' + rows.map(r => r.map(x => `"${String(x ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n')], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
 
 /* =====================================================================
+   확장팩 신청 — 마스터 직접 신청 · 즉시 적용(한도 확대 · 차단 해제) · 신청 월 전액 과금 · 승인 절차 없음
+   ===================================================================== */
+function packModal() {
+  if (S.role !== 'master') { toast('확장팩은 마스터 관리자만 신청할 수 있습니다. 마스터 관리자에게 요청하세요.', true); return; }
+  const ag = myAg(), A = AG[ag], s = agState(ag), need = needPacks(ag);
+  openModal(MH('이용량 확장팩 신청', `${esc(A.name)} · 팩당 ${won(A.pack.price)} · +${fmt(A.pack.docs)}건 · +${A.pack.gb}GB`) + `<div class="m-b">
+    <dl class="kv" style="margin-bottom:14px"><dt>문서 처리</dt><dd class="num">${fmt(s.used)} / ${fmt(s.L.docs)}건 <span class="muted">(초과분 → ${need.byDoc}팩)</span></dd><dt>보관 용량</dt><dd class="num">${s.stor.toFixed(2)} / ${s.L.gb}GB <span class="muted">(초과분 → ${need.byGb}팩)</span></dd><dt>필요 팩 수</dt><dd><b>${need.n}팩</b> <span class="muted" style="font-size:12px">둘 중 큰 수량 · 중복 산정 없음</span></dd></dl>
+    <div class="fld"><label for="packN">신청 수량</label><span class="stepper"><button type="button" data-act="pack-n" data-n="-1" aria-label="1팩 줄이기">−</button><input id="packN" value="${Math.max(1, need.n)}" inputmode="numeric" aria-label="신청 팩 수"><button type="button" data-act="pack-n" data-n="1" aria-label="1팩 늘리기">+</button></span></div>
+    <div id="packOut" style="margin-top:14px"></div>
+    <div class="callout warn" style="margin-top:14px">${ic('coins')}<div>신청 즉시 한도가 늘어나고 차단이 풀립니다. <b>${CUR_M.replace('-', '년 ')}월 이용료에 전액 과금</b>되며 일할계산 · 환불이 없습니다.</div></div></div>`
+    + okBtns('신청 · 즉시 적용'), () => {
+      const q = Math.max(1, Math.min(20, parseInt($('#packN').value, 10) || 1)), was = agState(ag), blocked = was.storOver || was.docFull;
+      PACKS.push({ ag, m:CUR_M, qty:q, at:nowDT(), by:me().id, docs:A.pack.docs, gb:A.pack.gb, price:A.pack.price, need:need.n });
+      UEV.unshift({ at:nowDT(), ag, kind:'확장팩', who:me().id, target:`${q}팩 적용 · +${fmt(q * A.pack.docs)}건 · +${q * A.pack.gb}GB`, mb:0 });
+      addLog('확장팩 신청', `${A.name} · ${q}팩 · ${won(q * A.pack.price)} · ${CUR_M} 과금`);
+      closeModal(); render(); const now = agState(ag);
+      toast(`확장팩 ${q}팩 적용 · 한도 ${fmt(now.L.docs)}건 · ${now.L.gb}GB${blocked && !now.storOver && !now.docFull ? ' · 차단 해제' : ''}`);
+    });
+  $('#packN').addEventListener('input', packCalc); packCalc();
+}
+function packCalc() {
+  const ag = myAg(), A = AG[ag], s = agState(ag), q = Math.max(1, Math.min(20, parseInt($('#packN')?.value, 10) || 1)), out = $('#packOut'); if (!out) return;
+  const docs = s.L.docs + q * A.pack.docs, gb = s.L.gb + q * A.pack.gb;
+  out.innerHTML = `<dl class="kv"><dt>적용 후 문서 한도</dt><dd class="num">${fmt(docs)}건 <span class="muted">(잔여 ${fmt(Math.max(0, docs - s.used))}건)</span></dd><dt>적용 후 보관 용량</dt><dd class="num">${gb}GB <span class="muted">(잔여 ${Math.max(0, gb - s.stor).toFixed(2)}GB)</span></dd><dt>이번 달 청구</dt><dd class="num"><b>${won(q * A.pack.price)}</b> <span class="muted">(${q}팩 × ${won(A.pack.price)}, VAT 별도)</span></dd></dl>`;
+}
+/* 프로토타입 전용 — 한도 시나리오 */
+function scenario(k) {
+  const ag = myAg(), L = lim(ag), u = useM(ag);
+  const docs = { ok:.55, warn:.964, over:.8, full:1 }[k] * L.docs, gb = { ok:.6, warn:.912, over:1.008, full:.78 }[k] * L.gb;
+  u.up = Math.round(docs * .49); u.reup = Math.round(docs * .033); u.dl = Math.round(docs) - u.up - u.reup; USE[ag].stor = +gb.toFixed(2);
+  render(); toast(`시나리오: ${{ ok:'정상', warn:'용량 잔여 10% 이하', over:'용량 초과 · 업로드/다운로드 차단', full:'월 문서 처리 한도 도달' }[k]}`);
+}
+
+/* =====================================================================
    EVENTS
    ===================================================================== */
 let UP = null;
 function addFiles(tx, d, files) {
   const c = custBy(tx); if (!c || !files.length) return;
-  const list = (c.files[d] ||= []), room = MAXF - list.length, ok = files.slice(0, room);
-  ok.forEach(f => list.push(f.name)); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `${d} ${ok.length}건 업로드`, me().id]); addLog('서류 업로드', `${tx} · ${d} ${ok.length}건`);
+  const ag = agOf(c.office); if (!docGuard(ag, 'up')) return;
+  const list = (c.files[d] ||= []), room = Math.min(MAXF - list.length, agState(ag).docLeft), ok = files.slice(0, room);
+  ok.forEach(f => { list.push(f.name); countDoc(ag, 'up', `${tx} · ${d}`, +(f.size ? f.size / 1048576 : 1.2).toFixed(1)); }); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `${d} ${ok.length}건 업로드`, me().id]); addLog('서류 업로드', `${tx} · ${d} ${ok.length}건`);
   const before = c.stage; recalc(c); render();
-  toast(files.length > room ? `항목당 최대 ${MAXF}개 — ${files.length - room}개는 제외했습니다.` : before !== c.stage ? `${d} 업로드 · 단계가 「${c.stage}」(으)로 바뀌었습니다.` : `${d} ${ok.length}건 업로드 완료`, files.length > room);
+  toast(files.length > room ? `항목당 최대 ${MAXF}개 · 남은 월 처리 한도 안에서만 올립니다 — ${files.length - room}개는 제외했습니다.` : before !== c.stage ? `${d} 업로드 · 단계가 「${c.stage}」(으)로 바뀌었습니다.` : `${d} ${ok.length}건 업로드 완료`, files.length > room);
 }
 function bindPage(p) {
   $('#gq')?.addEventListener('keydown', e => { if (e.key === 'Enter') { S.hist.q = e.target.value; S.hist.stage = 'all'; S.range.hist = [DP_MIN, TODAY]; location.hash = '#/history'; if (route() === 'history') render(); } });
   $('#hq')?.addEventListener('keydown', e => { if (e.key === 'Enter') { S.hist.q = e.target.value; render(); setTimeout(() => { const q = $('#hq'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }); } });
-  $('#fname')?.addEventListener('input', e => { S.fname = e.target.value; const tx = $('[data-act-change="issue-c"]').value; $('.fname-out').textContent = '→ ' + fileName(custBy(tx)); });
-  if (p === 'issue') bindDrag();
+  $('#fname')?.addEventListener('input', e => { S.fname = e.target.value; $('.fname-out').textContent = '→ ' + fileName(custBy(e.target.dataset.tx)); });
+  if (p === 'customer') bindDrag();
 }
 function bindDrag() {
   let src = null;
@@ -1429,52 +1877,62 @@ document.addEventListener('click', e => {
     case 'unmask': { const tx = a.dataset.tx; S.unmask[tx] = !S.unmask[tx]; if (S.unmask[tx]) addLog('개인정보 마스킹 해제', `${tx}`); render(); if (S.unmask[tx]) toast('원문을 표시했습니다 · 열람 기록이 사용 로그에 남았습니다'); break; }
     case 'memo': { const c = custBy(a.dataset.tx); c.memo = $('#memo').value; toast('검수 메모를 저장했습니다.'); break; }
     case 'review': { const c = custBy(a.dataset.tx); c.memo = $('#memo').value; c.reviewed = true; recalc(c); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '검수 완료' + (c.memo ? ` · ${c.memo}` : ''), me().id]); addLog('검수 완료', c.tx); render(); toast(`검수 완료 · 단계: ${c.stage}`); break; }
-    case 'up': UP = [a.dataset.tx, a.dataset.d]; $('#fpick').value = ''; $('#fpick').click(); break;
-    case 'dl': e.stopPropagation(); toast(`${a.dataset.n} 내려받기 (예시)`); break;
+    case 'up': { const c = custBy(a.dataset.tx); if (!docGuard(agOf(c.office), 'up')) break; UP = [a.dataset.tx, a.dataset.d]; $('#fpick').value = ''; $('#fpick').click(); break; }
+    case 'reup': { e.stopPropagation(); const c = custBy(a.dataset.tx); if (!docGuard(agOf(c.office), 'reup')) break; UP = [a.dataset.tx, a.dataset.d, +a.dataset.i]; $('#fpick').value = ''; $('#fpick').click(); break; }
+    case 'dl': { e.stopPropagation(); const c = custBy(a.dataset.tx), ag = agOf(c.office); if (!docGuard(ag, 'dl')) break; countDoc(ag, 'dl', `${c.tx} · ${a.dataset.n}`); addLog('서류 다운로드', `${c.tx} · ${a.dataset.n}`); render(); toast(`${a.dataset.n} 내려받기 · 문서 처리 1건 집계`); break; }
     case 'rm': { e.stopPropagation(); const c = custBy(a.dataset.tx), d = a.dataset.d, f = c.files[d][+a.dataset.i]; openModal(MH('파일 삭제', `${esc(d)} · ${esc(f)}`) + `<div class="m-b ink2" style="font-size:13.5px">삭제하면 되돌릴 수 없고 사용 로그에 남습니다.</div>` + okBtns('삭제', true), () => { c.files[d].splice(c.files[d].indexOf(f), 1); if (c.stage === '발급 대기') recalc(c); addLog('서류 삭제', `${c.tx} · ${d}`); closeModal(); render(); toast('파일을 삭제했습니다.'); }); break; }
     case 'form-dl': { const c = custBy(a.dataset.tx); downloadCSV(`고객관리_${c.tx}.csv`, [['인증번호','성','이름','생년월일','성별','국적','여권번호','여권 만료일','비자','미성년','개통 희망 요금제','유심번호','택배 주소'], [c.tx, c.name.split(' ')[0], c.name.split(' ').slice(1).join(' '), c.birth, c.sex, c.cc, c.pfull, c.expD, c.visa, c.minor ? 'Y' : 'N', '', '', '']]); addLog('양식 다운로드', `${c.tx} · 고객 관리 엑셀`); toast('여권 정보가 채워진 양식을 내려받았습니다.'); break; }
     case 'form-up': UP = [a.dataset.tx, '__form']; $('#fpick').value = ''; $('#fpick').click(); break;
     case 'done': { const c = custBy(a.dataset.tx); openModal(MH('개통 완료로 처리할까요?', `${c.tx} · ${esc(maskName(c.name))}`) + `<div class="m-b"><div class="callout bad">${ic('alert')}<div>여권 정보, 이미지 3장, 업로드 서류 ${Object.values(c.files).flat().length}개가 <b>즉시 삭제</b>되고 되돌릴 수 없습니다. 인증번호와 처리 이력(개인정보 없음)만 남습니다.</div></div><label class="switch" style="margin-top:14px"><input type="checkbox" id="ack">삭제 내용을 확인했습니다.</label></div>` + okBtns('개통 완료 · 삭제', true), () => {
-        if (!$('#ack').checked) { toast('삭제 내용 확인에 체크하세요.', true); return; } c.stage = '개통 완료 · 삭제'; c.name = ''; c.pmask = ''; c.pfull = ''; c.files = {}; c.delAt = `${TODAY} ${nowT().slice(0, 5)}`; delete S.unmask[c.tx]; c.hist.unshift([c.delAt.slice(5), '개통 완료 · 개인정보 즉시 삭제', me().id]); addLog('개통 완료', `${c.tx} · 개인정보 즉시 삭제`); closeModal(); render(); toast('개통 완료 · 개인정보를 삭제했습니다.'); }); break; }
+        if (!$('#ack').checked) { toast('삭제 내용 확인에 체크하세요.', true); return; } const nf = Object.values(c.files).flat().length, mb = +(nf * 1.2 + 3.4).toFixed(1), ag = agOf(c.office); USE[ag].stor = Math.max(0, +(USE[ag].stor - mb / 1024).toFixed(4)); UEV.unshift({ at:nowDT(), ag, kind:'삭제', who:me().id, target:`${c.tx} · 개통 완료 즉시 삭제`, mb:-mb });
+        c.stage = '개통 완료 · 삭제'; c.name = ''; c.pmask = ''; c.pfull = ''; c.files = {}; c.delAt = `${TODAY} ${nowT().slice(0, 5)}`; delete S.unmask[c.tx]; c.hist.unshift([c.delAt.slice(5), '개통 완료 · 개인정보 즉시 삭제', me().id]); addLog('개통 완료', `${c.tx} · 개인정보 즉시 삭제`); closeModal(); render(); toast(`개통 완료 · 개인정보를 삭제했습니다 (보관 용량 ${mb}MB 차감)`); }); break; }
     /* start */
     case 'method': S.c3.method = a.dataset.m; render(); break;
     case 'start': { if (S.c3.method === 'qr') { toast('고객 휴대폰 QR 진행은 협의 후 제공됩니다.', true); break; }
       const x = S.c3, n = 419 + S.pending.length, tx = `TX-1103-0${n}`;
-      const c = { tx, name:pick(POOL[x.cc]), cc:x.cc, visa:x.visa, minor:!x.visa.startsWith('E') && x.minor, office:'vn-hn', at:`${TODAY} ${nowT().slice(0, 5)}`, ocr:1, score:null, liv:null, reviewed:false, stage:'인증 진행 중', acct:me().id === 'vn-hn-01' ? 'vn-hn-01' : 'vn-hn-01', pmask:'', pfull:'', code:'', delAt:'', files:{}, memo:'', hist:[[`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '여권인증 시작 · 고객번호 발급', 'vn-hn-01']], birth:'2008-05-14', sex:'F', issueD:'2023-02-10', expD:'2033-02-10' };
+      const c = { tx, name:pick(POOL[x.cc]), cc:x.cc, visa:x.visa, minor:!x.visa.startsWith('E') && x.minor, office:x.office, at:`${TODAY} ${nowT().slice(0, 5)}`, ocr:1, score:null, liv:null, reviewed:false, stage:'인증 진행 중', acct:me().id, pmask:'', pfull:'', code:'', delAt:'', files:{}, memo:'', hist:[[`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '여권인증 시작 · 고객번호 발급', me().id]], birth:'2008-05-14', sex:'F', issueD:'2023-02-10', expD:'2033-02-10' };
       S.pending.unshift(c); addLog('여권인증 시작', tx); render(); toast(`고객번호 ${tx} 발급 · SIGNION 인증 화면을 엽니다 (예시)`);
-      setTimeout(() => { S.pending.splice(S.pending.indexOf(c), 1); Object.assign(c, { score:+(88 + Math.random() * 8).toFixed(1), liv:1, stage:'검수 대기', pmask:`${PFX[c.cc]}${ri(10, 99)}••••${ri(10, 99)}` }); c.pfull = c.pmask.replace('••••', '5521'); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, 'SIGNION 결과 수신 · 성공', 'system']); CUST.unshift(c); addLog('여권인증 결과 수신', `${tx} · 성공`); if (['start','history'].includes(route().split('/')[0])) render(); toast(`${tx} 결과 수신 · 성공 → 검수 대기`); }, 4000);
+      setTimeout(() => { S.pending.splice(S.pending.indexOf(c), 1); Object.assign(c, { score:+(88 + Math.random() * 8).toFixed(1), liv:1, stage:'검수 대기', pmask:`${PFX[c.cc]}${ri(10, 99)}••••${ri(10, 99)}` }); c.pfull = c.pmask.replace('••••', '5521'); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, 'SIGNION 결과 수신 · 성공', 'system']); CUST.unshift(c); const ag = agOf(c.office); AUTHN[ag][CUR_M] = (AUTHN[ag][CUR_M] || 0) + 1; addLog('여권인증 결과 수신', `${tx} · 성공 · 인증료 청구 대상 1건`); if (['start','history'].includes(route().split('/')[0])) render(); toast(`${tx} 결과 수신 · 성공 → 검수 대기`); }, 4000);
       break; }
     /* issue */
     case 'mv': { const o = S.order, i = o.indexOf(a.dataset.d), cur = $$('#ord li').map(li => li.dataset.od); const j = o.indexOf(cur[cur.indexOf(a.dataset.d) + +a.dataset.dir]); [o[i], o[j]] = [o[j], o[i]]; render(); break; }
     case 'tok': { const inp = $('#fname'), p = inp.selectionStart ?? inp.value.length; inp.value = inp.value.slice(0, p) + a.dataset.t + inp.value.slice(inp.selectionEnd ?? p); inp.dispatchEvent(new Event('input')); inp.focus(); break; }
-    case 'issue': { const c = custBy(a.dataset.tx), fn = fileName(c), pages = $$('.pg').length; c.stage = '개통 대기'; c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `KT 제출 서류 PDF 발급 · ${pages}쪽`, me().id]); addLog('제출 서류 발급', `${c.tx} · PDF ${pages}쪽`); render(); toast(`${fn} (${pages}쪽) 발급 · 단계: 개통 대기`); break; }
+    case 'issue': { const c = custBy(a.dataset.tx), fn = fileName(c), pages = issuePages(c), ag = agOf(c.office); if (!docGuard(ag, 'dl')) break; countDoc(ag, 'dl', `${c.tx} · 제출서류 PDF ${pages}쪽`); if (c.stage === '발급 대기') c.stage = '개통 대기'; c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `KT 제출 서류 PDF 발급 · ${pages}쪽`, me().id]); addLog('제출 서류 발급', `${c.tx} · PDF ${pages}쪽`); render(); toast(`${fn} (${pages}쪽) 발급 · 다운로드 1건 집계${c.stage === '개통 대기' ? ' · 단계: 개통 대기' : ''}`); break; }
+    case 'goto-issue': $('#issue-card')?.scrollIntoView({ behavior:'smooth', block:'start' }); break;
     /* accounts */
     case 'tree': S.tree = a.dataset.o; render(); break;
+    case 'acc-new': accNew(); break;
+    case 'acc-lv': accNew(a.dataset.lv, MD?.keep?.() || {}); break;
+    case 'acc-back': MD?.back ? MD.back() : closeModal(); break;
+    case 'acc-stop': { const ac = ACCTS.find(x => x.id === a.dataset.id), stop = ac.status !== '중지', used = usedThisMonth(ac.id);
+      openModal(MH(`${ac.id} 계정 ${stop ? '중지' : '재개'}`, `${esc(ac.name)} · ${LV[ac.lv]}`) + `<div class="m-b ink2" style="font-size:13.5px">${stop ? `중지하면 로그인할 수 없습니다.${ac.paid ? (used ? ` <b>이번 달 이미 이용(${used.at.slice(5)})해 당월 이용료는 그대로 청구됩니다.</b>` : ' 이번 달 아직 이용하지 않아 과금되지 않습니다.') : ''}` : '다시 로그인할 수 있게 합니다.'}</div>` + okBtns(stop ? '중지' : '재개', stop), () => { ac.status = stop ? '중지' : '정상'; addLog(stop ? '계정 중지' : '계정 재개', ac.id); closeModal(); render(); toast(`${ac.id} 계정을 ${stop ? '중지' : '재개'}했습니다.`); }); break; }
+    case 'acc-use': { const ac = ACCTS.find(x => x.id === a.dataset.id); markUse(ac.id, '고객 상세 조회 (데모)'); render(); toast(`${ac.id} 최초 이용 기록 · ${CUR_M.slice(5)}월 ${LV[ac.lv]} 추가 계정 이용료 과금`); break; }
     case 'unlock': { const ac = ACCTS.find(x => x.id === a.dataset.id); ac.status = '정상'; addLog('잠금 해제', ac.id); render(); toast(`${ac.id} 잠금을 해제했습니다.`); break; }
-    case 'acc-new': { const nx = { head:'master', master:'general', general:'sub' }[S.role], orgs = []; (function walk(n) { if (n.lv === nx) orgs.push(n); (n.c || []).forEach(walk); })(findOrg(ORG, scope()) || ORG);
-      openModal(MH(`${LV[nx]} 계정 발급`, '입력한 메일로 초기 비밀번호 설정 안내가 갑니다. 로그인할 때마다 이 메일로 인증번호를 받습니다.') + `<div class="m-b"><div class="fgrid"><div class="fld"><label>위계</label><input class="input" value="${LV[nx]}" disabled></div>
-        <div class="fld"><label for="iOrg">소속<span class="req">*</span></label><select class="select" id="iOrg" style="width:100%">${orgs.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}<option value="__new">+ 새 조직</option></select></div>
-        <div class="fld"><label for="iName">이름<span class="req">*</span></label><input class="input" id="iName" style="width:100%"></div><div class="fld"><label for="iId">아이디<span class="req">*</span></label><input class="input mono" id="iId" style="width:100%"></div>
-        <div class="fld full"><label for="iMail">메일 (인증번호 수신)<span class="req">*</span></label><input class="input" id="iMail" type="email" style="width:100%"></div></div></div>` + okBtns('발급'), () => {
-        const v = { org:$('#iOrg').value, name:$('#iName').value.trim(), id:$('#iId').value.trim(), mail:$('#iMail').value.trim() };
-        if (!v.name || !v.id || !/^\S+@\S+\.\S+$/.test(v.mail)) { toast('이름 · 아이디 · 메일을 확인하세요.', true); return; } if (ACCTS.some(x => x.id === v.id)) { toast('이미 있는 아이디입니다.', true); return; }
-        const org = v.org === '__new' ? scope() : v.org; ACCTS.push({ id:v.id, name:v.name, lv:nx, org, orgName:findOrg(ORG, org)?.name || '신규 조직', status:'정상', last:'—', cust:0, mail:v.mail }); addLog('계정 발급', `${v.id} (${LV[nx]})`); closeModal(); render(); toast(`${v.id} 계정을 발급했습니다 · 안내 메일 발송`); }); break; }
-    case 'acc-edit': { const ac = ACCTS.find(x => x.id === a.dataset.id); openModal(MH('계정 수정', ac.id) + `<div class="m-b"><div class="fgrid"><div class="fld"><label for="eName">이름</label><input class="input" id="eName" value="${esc(ac.name)}" style="width:100%"></div><div class="fld"><label for="eSt">상태</label><select class="select" id="eSt" style="width:100%">${['정상','잠금','휴면'].map(s => `<option ${s === ac.status ? 'selected' : ''}>${s}</option>`).join('')}</select></div><div class="fld full"><label for="eMail">메일 (인증번호 수신)</label><input class="input" id="eMail" value="${esc(ac.mail)}" style="width:100%"></div></div></div>` + okBtns('저장'), () => { ac.name = $('#eName').value.trim() || ac.name; ac.status = $('#eSt').value; ac.mail = $('#eMail').value.trim() || ac.mail; addLog('계정 수정', ac.id); closeModal(); render(); toast('저장했습니다.'); }); break; }
+    case 'acc-edit': { const ac = ACCTS.find(x => x.id === a.dataset.id); openModal(MH('계정 수정', ac.id) + `<div class="m-b"><div class="fgrid"><div class="fld"><label for="eName">이름</label><input class="input" id="eName" value="${esc(ac.name)}" style="width:100%"></div><div class="fld"><label for="eSt">상태</label><select class="select" id="eSt" style="width:100%">${['정상','잠금','휴면','중지'].map(s => `<option ${s === ac.status ? 'selected' : ''}>${s}</option>`).join('')}</select></div><div class="fld full"><label for="eMail">메일 (인증번호 수신)</label><input class="input" id="eMail" value="${esc(ac.mail)}" style="width:100%"></div></div></div>` + okBtns('저장'), () => { ac.name = $('#eName').value.trim() || ac.name; ac.status = $('#eSt').value; ac.mail = $('#eMail').value.trim() || ac.mail; addLog('계정 수정', ac.id); closeModal(); render(); toast('저장했습니다.'); }); break; }
     case 'acc-del': { const ac = ACCTS.find(x => x.id === a.dataset.id), sib = ACCTS.filter(x => x.lv === ac.lv && x.org === ac.org && x.id !== ac.id);
-      openModal(MH(`${ac.id} 계정 삭제`, `${esc(ac.name)} · ${esc(ac.orgName)}`) + `<div class="m-b"><div class="callout warn">${ic('alert')}<div>이 계정이 등록한 고객 <b>${ac.cust}명</b>을 넘겨받을 계정을 고르세요. (협의 필요 항목)</div></div><div class="fld" style="margin-top:14px"><label for="xfer">고객 이관 대상</label><select class="select" id="xfer" style="width:100%">${sib.map(s => `<option>${s.id} · ${esc(s.name)}</option>`).join('')}<option>상위 조직으로 이관</option></select></div></div>` + okBtns('삭제', true), () => { ACCTS.splice(ACCTS.indexOf(ac), 1); addLog('계정 삭제', `${ac.id} · 고객 이관 → ${$('#xfer').value.split(' ')[0]}`); closeModal(); render(); toast(`${ac.id} 계정을 삭제했습니다.`); }); break; }
+      const used = usedThisMonth(ac.id);
+      openModal(MH(`${ac.id} 계정 삭제`, `${esc(ac.name)} · ${esc(ac.orgName)}`) + `<div class="m-b">${ac.paid ? `<div class="callout ${used ? 'bad' : 'info'}" style="margin-bottom:12px">${ic('coins')}<div>${used ? `유료 추가 계정 · 이번 달 이용(${used.at.slice(5)}) — <b>삭제해도 당월 이용료는 환불되지 않습니다.</b> 최초 이용 기록은 삭제 후에도 보존됩니다.` : '유료 추가 계정 · 이번 달 미사용 — 삭제하면 과금되지 않습니다.'}</div></div>` : ''}<div class="callout warn">${ic('alert')}<div>이 계정이 등록한 고객 <b>${ac.cust}명</b>을 넘겨받을 계정을 고르세요. (협의 필요 항목)</div></div><div class="fld" style="margin-top:14px"><label for="xfer">고객 이관 대상</label><select class="select" id="xfer" style="width:100%">${sib.map(s => `<option>${s.id} · ${esc(s.name)}</option>`).join('')}<option>상위 조직으로 이관</option></select></div></div>` + okBtns('삭제', true), () => { ACCTS.splice(ACCTS.indexOf(ac), 1); addLog('계정 삭제', `${ac.id} · 고객 이관 → ${$('#xfer').value.split(' ')[0]}`); closeModal(); render(); toast(`${ac.id} 계정을 삭제했습니다.`); }); break; }
     /* retention */
-    case 'ret': S.retention = Math.min(90, Math.max(5, S.retention + +a.dataset.n)); render(); break;
+    case 'ret': S.retention = Math.min(60, Math.max(5, S.retention + +a.dataset.n)); render(); break;
+    /* 확장팩 · 정산 */
+    case 'pack-open': packModal(); break;
+    case 'pack-n': { const inp = $('#packN'); inp.value = Math.max(1, Math.min(20, (+inp.value || 1) + +a.dataset.n)); packCalc(); break; }
+    case 'scn': scenario(a.dataset.s); break;
+    case 'pick-ag': S.ag = a.dataset.ag; render(); break;
+    case 'stmt-dl': { const ag = myAg(), A = AG[ag], st = statement(ag, S.month); downloadCSV(`월정산서_${A.code}_${S.month}.csv`, [['대리점', A.name, A.code], ['정산월', S.month, st.st.st], [], ['구분','정산 항목','수량','적용 단가','청구금액','적용 기준 및 비고'], ...st.rows.map(r => [r.g, r.n, r.q, r.u, r.amt, r.note]), ['', '공급가액', '', '', st.supply, ''], ['', '부가세 (10%)', '', '', st.vat, ''], ['', '총 청구금액', '', '', st.total, '']]); addLog('정산서 다운로드', `${A.name} · ${S.month}`); toast('정산서를 내려받았습니다.'); break; }
     case 'ret-save': addLog('보관기간 변경', `미개통 보관 ${S.retention}일`); toast(`미개통 보관기간 ${S.retention}일로 저장했습니다.`); break;
   }
 });
 document.addEventListener('change', e => {
   const t = e.target;
-  if (t.id === 'fpick' && UP) { const [tx, d] = UP; UP = null; if (d === '__form') { const c = custBy(tx); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `고객 관리 엑셀 작성본 업로드 · ${t.files[0]?.name || ''}`, me().id]); addLog('서류 업로드', `${tx} · 고객 관리 엑셀`); render(); toast('작성본을 고객 레코드에 붙였습니다.'); } else addFiles(tx, d, [...t.files]); return; }
+  if (t.id === 'fpick' && UP) { const [tx, d, ri0] = UP; UP = null;
+    if (ri0 != null) { const c = custBy(tx), f = t.files[0], ag = agOf(c.office); if (!f || !docGuard(ag, 'reup')) return; const old = c.files[d][ri0], mb = +(f.size / 1048576).toFixed(1); c.files[d][ri0] = f.name; countDoc(ag, 'reup', `${tx} · ${d}`, mb - 1.2); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `${d} 재업로드 · ${old} → ${f.name}`, me().id]); addLog('서류 재업로드', `${tx} · ${d}`); render(); toast(`${d} 재업로드 완료 · 문서 처리 1건 집계`); return; } if (d === '__form') { const c = custBy(tx); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `고객 관리 엑셀 작성본 업로드 · ${t.files[0]?.name || ''}`, me().id]); addLog('서류 업로드', `${tx} · 고객 관리 엑셀`); render(); toast('작성본을 고객 레코드에 붙였습니다.'); } else addFiles(tx, d, [...t.files]); return; }
+  if (t.id === 'agSel') { S.ag = t.value; render(); return; }
   if (t.matches('[data-f]')) { S.hist[t.dataset.f] = t.value; S.hist.sel.clear(); render(); }
   if (t.matches('select[data-lf]')) { S.logs[t.dataset.lf] = t.value; render(); }
   if (t.matches('[data-c3]')) { const k = t.dataset.c3; S.c3[k] = k === 'minor' ? t.value === '1' : t.value; if (k === 'visa' && t.value.startsWith('E')) S.c3.minor = false; render(); }
   if (t.matches('[data-act-change="issue-c"]')) location.hash = '#/issue/' + t.value;
-  if (t.id === 'retd') { const v = parseInt(t.value, 10); S.retention = isNaN(v) ? S.retention : Math.min(90, Math.max(5, v)); render(); }
+  if (t.id === 'retd') { const v = parseInt(t.value, 10); S.retention = isNaN(v) ? S.retention : Math.min(60, Math.max(5, v)); render(); }
   if (t.matches('[data-dpin]')) dpInput(t);
 });
 document.addEventListener('input', e => { if (e.target.matches('input[data-lf="ip"]')) { S.logs.ip = e.target.value; clearTimeout(window._ipT); window._ipT = setTimeout(() => { render(); const q = $('input[data-lf="ip"]'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }, 350); } if (e.target.matches('[data-dpin]')) e.target.classList.remove('err'); });
