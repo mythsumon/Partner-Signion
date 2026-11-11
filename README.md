@@ -4,6 +4,7 @@ SIGNION 파트너 관리자 (KT 외국인 휴대폰 개통) 화면 프로토타�
 
 - `index.html` — 단일 파일 프로토타입 (서버 불필요, 브라우저로 바로 열림)
 - `assets/` — SIGNION 로고 원본 SVG (BI 가이드라인 기준)
+- `backoffice/` — 내부 관리자(SIGNION BackOffice) 프로토타입. 대리점별 계약 · 요금 설정, 사용량, 확장팩 이력, 월 정산 · 마감, 공통 서버 집계 화면 포함 (`backoffice/README.md`, 개발 명세 `backoffice/DEVELOPERS.md`)
 
 근거: 「SIGNION 파트너 관리자 기획서 v0.1」 (화면 A1~F2, 관리자 위계 4단계) · 「KT 통합 Admin 정책 — 대리점별 이용량·과금 관리」의 **고객사 어드민** 범위 · 디자인: SIGNION BI 가이드 (BackOffice와 공용 디자인 시스템)
 
