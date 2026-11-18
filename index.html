@@ -140,7 +140,7 @@ textarea.input{height:auto;padding:10px 12px;min-height:88px;resize:vertical;lin
 .chip.run{color:var(--info);border-color:color-mix(in srgb,var(--info) 30%,transparent);background:var(--info-bg)}
 .chip.skip{opacity:.55}
 .tier{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:4px;font-size:11.5px;font-weight:700}
-.tier-0{background:#0E1726;color:#fff} .tier-1{background:var(--brand);color:#fff} .tier-2{background:var(--brand-100);color:var(--brand)} .tier-3{background:var(--neutral-bg);color:var(--ink-2)}
+.tier-0{background:#0E1726;color:#fff} .tier-1{background:var(--brand);color:#fff} .tier-2{background:var(--brand-100);color:var(--brand)} .tier-3{background:var(--neutral-bg);color:var(--ink-2)} .tier-4{background:transparent;color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line)}
 [data-theme="dark"] .tier-0{background:#E6EBF2;color:#0A0F17}
 
 .tb{display:flex;align-items:center;gap:8px;padding:14px 16px;flex-wrap:wrap;border-bottom:1px solid var(--line-2)}
@@ -838,6 +838,21 @@ button.gsearch span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:elli
 .fail-box dl{padding:12px 14px;margin:0}
 .lim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:16px}
 
+
+/* 로그인 — 언어 · 최초 로그인 단계 */
+.lg-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:36px}
+.lg-top .logo{margin-bottom:0!important}
+.lg-lang button{border:0;background:none;padding:4px 10px;border-radius:6px;font:inherit;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.lg-lang button.on{background:var(--surface);color:var(--brand);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.lg-steps{list-style:none;display:flex;gap:6px;margin:-14px 0 22px;padding:0;font-size:12px;color:var(--muted)}
+.lg-steps li{flex:1;display:flex;align-items:center;gap:6px;padding-top:8px;border-top:3px solid var(--line)}
+.lg-steps li span{width:18px;height:18px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--surface-2);border:1px solid var(--line)}
+.lg-steps li span .i{width:11px;height:11px;stroke-width:3}
+.lg-steps li.on{color:var(--ink);font-weight:600;border-color:var(--brand)}
+.lg-steps li.on span{background:var(--brand);color:#fff;border-color:var(--brand)}
+.lg-steps li.done{border-color:var(--brand)}
+.lg-steps li.done span{background:var(--brand-100);color:var(--brand);border-color:var(--brand-100)}
+.lg-first{display:flex;align-items:center;gap:5px;width:100%;margin-top:4px;cursor:pointer;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -972,8 +987,12 @@ const ME = {
   sub:    { id:'vn-hn-01',  name:'Pham Thi Thu',    org:'하노이 영업소',     ip:'103.21.148.22', mail:'p•••••@vn-agency.example' },
 };
 const ROLE_BY_ID = { 'kt-ops01':'head', 'hi-master':'master', 'vn-gm':'general', 'vn-hn-01':'sub' };
-const LV = { head:'헤드마스터', master:'마스터', general:'총괄', sub:'서브' };
-const LV_TIER = { head:0, master:1, general:2, sub:3 };
+const LV = { head:'헤드마스터', master:'마스터', general:'총괄', sub:'서브', staff:'직원' };
+const LV_TIER = { head:0, master:1, general:2, sub:3, staff:4 };
+/* 계정 등록 권한 — 마스터는 SIGNION 백오피스에서 파트너 등록 시 발급. 각 관리자는 바로 아래 관리자와 본인 조직의 직원을 등록 */
+const CAN_ADD = { head:[], master:['general','staff'], general:['sub','staff'], sub:['staff'] };
+/* 최초 로그인 인증번호를 받는 「지정된 관리자」 = 계정을 발급한 상위 관리자 */
+const ISSUER = { head:{ by:'SIGNION 백오피스', mail:'o•••••@lordsystem.example' }, master:{ by:'SIGNION 백오피스', mail:'o•••••@lordsystem.example' }, general:{ by:'hi-master · 윤재민', mail:'y•••••@hyundai-infinity.example' }, sub:{ by:'vn-gm · Nguyen Quoc Bao', mail:'n•••••@vn-agency.example' } };
 const ORG = { id:'kt', name:'KT', lv:'head', c:[
   { id:'hi', name:'현대인피니티', lv:'master', c:[
     { id:'vn', name:'베트남 총괄 사무소', lv:'general', c:[{ id:'vn-hn', name:'하노이 영업소', lv:'sub' }, { id:'vn-hcm', name:'호찌민 영업소', lv:'sub' }, { id:'vn-dn', name:'다낭 영업소', lv:'sub' }] },
@@ -1134,8 +1153,13 @@ const ACCTS = [
  ['np-pkr-01','Hari Poudel','sub','np-pkr','포카라 영업소','휴면','10-31 11:03',106,'h.poudel@np-agency.example'],
  ['mn-ub-01','Oyunaa Bat','sub','mn-ub','울란바토르 영업소','정상','11-02 17:13',118,'oyunaa@mn-agency.example'],
  ['mn-ub-02','Munkh Erdene','sub','mn-ub','울란바토르 영업소','정상','11-01 15:45',93,'munkh@mn-agency.example'],
-].map(a => ({ id:a[0], name:a[1], lv:a[2], org:a[3], orgName:a[4], status:a[5], last:'2026-' + a[6], cust:a[7], mail:a[8],
+ ['hi-st01','김도윤','staff','hi','현대인피니티 본사','정상','11-03 09:05',0,'dy.kim@hyundai-infinity.example'],
+ ['vn-st01','Vo Thi Lan','staff','vn','베트남 총괄 사무소','정상','11-03 10:20',0,'lan.vt@vn-agency.example'],
+ ['vn-hn-s01','Nguyen Van Minh','staff','vn-hn','하노이 영업소','정상','11-03 13:02',0,'minh.nv@vn-agency.example'],
+ ['vn-hn-s02','Tran Thi Hoa','staff','vn-hn','하노이 영업소','정상','—',0,'n.baoq@vn-agency.example'],
+].map(a => ({ id:a[0], name:a[1], lv:a[2], org:a[3], orgName:a[4], status:a[5], last:a[6] === '—' ? '—' : '2026-' + a[6], cust:a[7], mail:a[8],
   /* 기본 제공 수량을 넘어 생성된 계정 = 유료 추가 계정 (생성 시 과금 안내 확인 기록) */
+  pend:a[0] === 'vn-hn-s02' ? '최초 인증 대기' : null, by:{ 'hi-st01':'hi-master', 'vn-st01':'vn-gm', 'vn-hn-s01':'vn-hn-01', 'vn-hn-s02':'vn-hn-01' }[a[0]] || null,
   paid:['vn-hcm-01','vn-hcm-02','vn-dn-01'].includes(a[0]), consent:['vn-hcm-01','vn-hcm-02','vn-dn-01'].includes(a[0]) ? { at:'2026-10-19 09:30', by:'hi-master' } : null }));
 const LOGS = [
  ['11-03 13:47:10','vn-hn-01','서브','103.21.148.22','서류 업로드','TX-1103-0418 · 법정대리인 동의서 1건','vn-hn'],
@@ -1166,6 +1190,7 @@ const S = {
   order:['여권 데이터 요약','여권 컬러 스캔본','통신개통신청서','입학증명서 (표준입학허가서)','표준근로계약서','개인정보활용동의서','법정대리인 동의서','법정대리인 신분증','가족관계증명서','기타'],
   fname:'{영업소}_{성}_{여권번호끝4}_{발급일}.pdf',
 };
+try { const lg = localStorage.getItem('sg_lang'); if (lg === 'ko' || lg === 'en') S.lang = lg; } catch (e) {}
 try { const st = JSON.parse(sessionStorage.getItem('sgp') || '{}'); if (st.authed) { S.authed = true; S.role = st.role || 'head'; } const th = localStorage.getItem('sg_theme'); if (th) S.theme = th; } catch (e) {}
 document.documentElement.dataset.theme = S.theme;
 const saveAuth = () => { try { sessionStorage.setItem('sgp', JSON.stringify({ authed:S.authed, role:S.role })); } catch (e) {} };
@@ -1353,7 +1378,7 @@ const MENU = [
   { sec:'업무' }, { id:'dashboard', l:'대시보드', i:'grid' }, { id:'history', l:'인증 결과', i:'shield' },
   { sec:'서비스' }, { id:'start', l:'여권인증', i:'scan', only:['master','general','sub'] },
   { sec:'이용 · 정산' }, { id:'usage', l:'이용 현황', i:'chart' }, { id:'contract', l:'계약 · 요금', i:'file', only:['head','master'] }, { id:'settle', l:'월 이용료', i:'coins', only:['head','master'] },
-  { sec:'관리' }, { id:'accounts', l:'계정 관리', i:'users', only:['head','master','general'] }, { id:'retention', l:'개인정보 보관', i:'lock' }, { id:'logs', l:'관리자 사용 로그', i:'log' },
+  { sec:'관리' }, { id:'accounts', l:'계정 관리', i:'users', only:['head','master','general','sub'] }, { id:'retention', l:'개인정보 보관', i:'lock' }, { id:'logs', l:'관리자 사용 로그', i:'log' },
 ];
 const route = () => (location.hash.replace(/^#\/?/, '') || (S.authed ? 'dashboard' : 'login'));
 const allowed = id => { const m = MENU.find(x => x.id === id); return !m || !m.only || m.only.includes(S.role); };
@@ -1397,7 +1422,7 @@ function Shell(p, body, arg) {
         <div class="dd" style="min-width:270px"><div class="dd-h">프로토타입 전용 — 위계별 화면 확인</div>${Object.keys(ROLES).map(k => `<button class="dd-i ${k === S.role ? 'on' : ''}" data-act="role" data-r="${k}">${tierB(k)}<span>${esc(ME[k].org)}<small>${ME[k].id} · ${esc(ROLES[k].range)}</small></span></button>`).join('')}</div></div>
       <button class="ibtn" data-act="theme" aria-label="테마 전환">${ic(S.theme === 'dark' ? 'sun' : 'moon')}</button>
       <div class="dd-wrap"><button class="me" data-act="dd" aria-haspopup="true" style="border:0;background:none;cursor:pointer;font:inherit;color:inherit"><span class="av">${esc(M.name[0])}</span><span class="me-t">${esc(M.name)}<small>${R.label} · ${esc(M.org)}</small></span></button>
-        <div class="dd"><div class="dd-h">${M.id} · 접속 IP ${M.ip}</div><a class="dd-i" href="#/logs">${ic('history')}내 사용 로그</a><div class="dd-sep"></div><button class="dd-i" data-act="logout">${ic('logout')}로그아웃</button></div></div>
+        <div class="dd"><div class="dd-h">${M.id} · 접속 IP ${M.ip}</div><a class="dd-i" href="#/logs">${ic('history')}내 사용 로그</a><button class="dd-i" data-act="my-mail">${ic('edit')}내 메일 변경</button><div class="dd-sep"></div><button class="dd-i" data-act="logout">${ic('logout')}로그아웃</button></div></div>
     </header>
     <main class="content">${body}</main>
   </div></div>`;
@@ -1681,52 +1706,57 @@ function stmtPrint() {
 /* ---------- E1 계정 관리 ---------- */
 function findOrg(n, id) { if (n.id === id) return n; for (const k of n.c || []) { const f = findOrg(k, id); if (f) return f; } return null; }
 function Accounts() {
-  const sc = scope(), sel = S.tree || sc, next = { head:'master', master:'general', general:'sub', sub:null }[S.role];
+  const sc = scope(), sel = S.tree || sc, next = CAN_ADD[S.role][0] || null, isS = S.role === 'sub';
   const under = o => { if (sel === 'kt') return true; let x = o; while (x) { if (x === sel) return true; x = PARENT[x]; } return false; };
   const rootN = findOrg(ORG, sc) || ORG;
   const draw = n => `<li><button class="nd ${n.id === sel ? 'on' : ''}" data-act="tree" data-o="${n.id}">${tierB(n.lv)}${esc(n.name)}</button>${n.c ? `<ul>${n.c.map(draw).join('')}</ul>` : ''}</li>`;
-  const list = ACCTS.filter(a => under(a.org) && (S.role === 'head' || a.org !== sc));
+  const list = ACCTS.filter(a => under(a.org) && (S.role === 'head' || a.org !== sc || a.lv === 'staff'));
   const isM = S.role === 'master', isG = S.role === 'general';
-  const billCell = a => { if (!a.paid) return '<span class="basic-t">기본 제공</span>'; const u = usedThisMonth(a.id);
+  const billCell = a => { if (a.lv === 'staff') return '<span class="basic-t">직원 계정</span>'; if (!a.paid) return '<span class="basic-t">기본 제공</span>'; const u = usedThisMonth(a.id);
     return `<span class="paid-t">유료 추가</span><span class="sub">${u ? `${CUR_M.slice(5)}월 과금 · 최초 이용 ${u.at.slice(5)}` : `${CUR_M.slice(5)}월 미과금 (미사용)`}</span>`; };
-  const rows = list.map(a => { const mine = isM ? a.lv !== 'master' : isG ? a.lv === 'sub' : S.role === 'head' && a.lv === 'master';
-    return `<tr class="${a.status === '중지' ? 'off' : ''}"><td class="mono">${a.id}</td><td class="strong">${esc(a.name)}</td><td>${tierB(a.lv)}</td><td>${esc(a.orgName)}</td><td>${billCell(a)}</td><td>${badge(a.status)}</td><td class="num">${a.last === '—' ? '—' : a.last.slice(5)}</td><td class="n num">${a.cust || '—'}</td>
-      <td>${mine ? `<div style="display:flex;gap:4px">${a.status === '잠금' ? `<button class="btn btn-sm" data-act="unlock" data-id="${a.id}">${ic('unlock')}잠금 해제</button>` : ''}${a.paid && !usedThisMonth(a.id) && a.status !== '중지' ? `<button class="btn btn-sm btn-ghost" data-act="acc-use" data-id="${a.id}" title="프로토타입 전용: 이 계정이 고객정보를 처음 조회했다고 가정">${ic('eye')}첫 이용(데모)</button>` : ''}<button class="btn btn-sm" data-act="acc-edit" data-id="${a.id}">${ic('edit')}수정</button>${isM || isG ? `<button class="btn btn-sm" data-act="acc-stop" data-id="${a.id}">${a.status === '중지' ? '재개' : '중지'}</button>` : ''}<button class="btn btn-sm btn-d" data-act="acc-del" data-id="${a.id}" aria-label="${a.id} 삭제">${ic('trash')}</button></div>` : '<span class="muted" style="font-size:12px">조회만</span>'}</td></tr>`; }).join('');
+  const rows = list.map(a => { const mine = isM ? a.lv !== 'master' : isG ? (a.lv === 'sub' || a.lv === 'staff') : isS ? a.lv === 'staff' : false;
+    return `<tr class="${a.status === '중지' ? 'off' : ''}"><td class="mono">${a.id}</td><td class="strong">${esc(a.name)}</td><td>${tierB(a.lv)}</td><td>${esc(a.orgName)}</td><td>${billCell(a)}</td><td>${badge(a.status)}${a.pend ? `<span class="sub" style="display:block;font-size:11.5px;color:var(--warn,#B45309);margin-top:2px">${a.pend}</span>` : ''}</td><td class="num">${a.last === '—' ? '—' : a.last.slice(5)}</td><td class="n num">${a.cust || '—'}</td>
+      <td>${mine ? `<div style="display:flex;gap:4px">${a.status === '잠금' ? `<button class="btn btn-sm" data-act="unlock" data-id="${a.id}">${ic('unlock')}잠금 해제</button>` : ''}${a.paid && !usedThisMonth(a.id) && a.status !== '중지' ? `<button class="btn btn-sm btn-ghost" data-act="acc-use" data-id="${a.id}" title="프로토타입 전용: 이 계정이 고객정보를 처음 조회했다고 가정">${ic('eye')}첫 이용(데모)</button>` : ''}<button class="btn btn-sm" data-act="acc-edit" data-id="${a.id}">${ic('edit')}수정</button>${isM || isG || isS ? `<button class="btn btn-sm" data-act="acc-stop" data-id="${a.id}">${a.status === '중지' ? '재개' : '중지'}</button>` : ''}<button class="btn btn-sm btn-d" data-act="acc-del" data-id="${a.id}" aria-label="${a.id} 삭제">${ic('trash')}</button></div>` : '<span class="muted" style="font-size:12px">조회만</span>'}</td></tr>`; }).join('');
   const ag = S.role === 'head' ? null : myAg(), A = ag && AG[ag];
   const g = isG ? genOf(sc) : null;
-  const quota = A ? `<div class="kpis">${(isG ? ['sub'] : ['master','general','sub']).map(lv => { const n = acctN(ag, lv, g), b = basicN(ag, lv, g), p = paidN(ag, lv, g);
+  const quota = A && !isS ? `<div class="kpis">${(isG ? ['sub'] : ['master','general','sub']).map(lv => { const n = acctN(ag, lv, g), b = basicN(ag, lv, g), p = paidN(ag, lv, g);
       return KPI(`${LV[lv]} 계정${lv === 'sub' && !g ? ` (총괄별 ${A.basic.sub}개)` : ''}`, `${n}`, `/ 기본 ${b}`, p ? `유료 추가 ${p}개 · ${won(A.extra[lv])}/월 (이용 월만)` : `기본 제공 잔여 ${Math.max(0, b - n)}개`, 'users'); }).join('')}</div>` : '';
-  return PH('계정 관리', isM ? '소속 관리자(총괄 · 서브) 계정을 생성 · 중지 · 삭제하고, 총괄이 발급한 서브 계정도 확인합니다. 기본 제공 수량(총괄 3개 · 총괄별 서브 3개)을 넘는 계정은 유료 추가 계정이며, 그 달 처음 고객정보 · 문서를 조회 · 처리할 때 당월 이용료가 부과됩니다.'
-      : isG ? '소속 영업소의 서브 관리자 계정을 발급 · 수정 · 삭제합니다. 총괄 사무소마다 서브 3개가 기본 제공되고, 넘는 계정은 유료 추가 계정입니다.' : '전체 대리점의 관리자 계정을 조회하고, 대리점 마스터 계정을 발급합니다.',
-    `<button class="btn btn-p" data-act="acc-new" ${next ? '' : 'disabled'}>${ic('plus')}${isM ? '관리자 계정 생성' : isG ? '서브 계정 발급' : '마스터 계정 발급'}</button>`)
-  + quota
+  const policy = `<div class="callout info acc-policy" style="margin-bottom:16px">${ic('users')}<div><b>계정 등록 권한</b> — 마스터 → 총괄 관리자 · 소속 직원 / 총괄 → 서브 관리자 · 소속 직원 / 서브 → 소속 영업 직원 / 직원 → 등록 권한 없음. 마스터 계정은 SIGNION 백오피스에서 파트너 등록 시 발급합니다.<br><span class="muted" style="font-size:12.5px">새 계정은 첫 로그인 때 <b>발급한 관리자 메일</b>로 인증번호를 받고, 본인 메일로 바꿔 다시 인증해야 이용할 수 있습니다(직원 포함). 메일을 바꾸면 다시 인증합니다.</span></div></div>`;
+  return PH('계정 관리', isM ? '하위 총괄 관리자와 본사 소속 직원 계정을 등록 · 중지 · 삭제하고, 그 아래 서브 · 직원 계정도 관리합니다. 기본 제공 수량(총괄 3개 · 총괄별 서브 3개)을 넘는 관리자 계정은 유료 추가 계정이며, 그 달 처음 고객정보 · 문서를 조회 · 처리할 때 당월 이용료가 부과됩니다.'
+      : isG ? '소속 영업소의 서브 관리자와 총괄 사무소 소속 직원 계정을 등록 · 수정 · 삭제합니다. 총괄 사무소마다 서브 3개가 기본 제공되고, 넘는 계정은 유료 추가 계정입니다.'
+      : isS ? '영업소 소속 영업 직원 계정을 등록 · 수정 · 중지 · 삭제합니다. 등록한 직원은 이 영업소에 자동으로 연결됩니다.'
+      : '전체 대리점의 관리자 · 직원 계정을 조회합니다 (조회 전용). 마스터 계정은 SIGNION 백오피스에서 발급합니다.',
+    next ? `<button class="btn btn-p" data-act="acc-new">${ic('plus')}${isS ? '영업 직원 등록' : '계정 등록'}</button>` : '')
+  + policy + quota
   + `<div class="grid-e1">${Card('조직', `<ul class="tree">${draw(rootN)}</ul>`)}
-    ${Card('관리자 계정', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>아이디</th><th>이름</th><th>위계</th><th>소속</th><th>구분 · 당월 과금</th><th>상태</th><th>최근 로그인</th><th class="n">담당 고객</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="9"><div class="empty">${ic('users')}<div>이 조직 아래 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:`${list.length}개 · ${esc(findOrg(ORG, sel)?.name || '')}` })}</div>`;
+    ${Card('관리자 · 직원 계정', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>아이디</th><th>이름</th><th>위계</th><th>소속</th><th>구분 · 당월 과금</th><th>상태</th><th>최근 로그인</th><th class="n">담당 고객</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="9"><div class="empty">${ic('users')}<div>이 조직 아래 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:`${list.length}개 · ${esc(findOrg(ORG, sel)?.name || '')}` })}</div>`;
 }
 /* 계정 생성 모달 — 마스터: 총괄 · 서브 / 헤드마스터: 마스터. 유료 추가 계정이면 과금 안내 팝업 확인 후 생성 */
 const PAID_NOTICE = '해당 계정은 기본 제공 수량을 초과한 유료 관리자 계정입니다. 계정 생성만으로는 과금되지 않으며, 최초 고객정보·문서 조회 또는 처리 시 월 이용료가 부과됩니다. 해당 월 중 계정을 삭제하거나 비활성화하더라도 당월 이용료는 환불되지 않습니다.';
 function accNew(lv, keep = {}) {
-  const lvs = S.role === 'head' ? ['master'] : S.role === 'general' ? ['sub'] : ['general','sub']; lv = lvs.includes(lv) ? lv : lvs[0];
-  const base = S.role === 'head' ? ORG : findOrg(ORG, scope()), orgs = []; (function walk(n) { if (n.lv === lv) orgs.push(n); (n.c || []).forEach(walk); })(base);
+  const lvs = CAN_ADD[S.role]; if (!lvs.length) { toast('계정 등록 권한이 없습니다.', true); return; } lv = lvs.includes(lv) ? lv : lvs[0];
+  const base = findOrg(ORG, scope()), orgs = []; if (lv === 'staff') orgs.push(base); else (function walk(n) { if (n.lv === lv) orgs.push(n); (n.c || []).forEach(walk); })(base);
+  const myMail = ACCTS.find(x => x.id === me().id)?.mail || me().mail, pw0 = keep.pw || ('Sg' + Math.random().toString(36).slice(2, 8) + '!' + ri(10, 99));
   const org0 = orgs.some(o => o.id === keep.org) ? keep.org : orgs[0]?.id, ag = S.role === 'head' ? null : myAg(), A = ag && AG[ag], g = lv === 'sub' && org0 ? genOf(org0) : null;
-  const n = ag ? acctN(ag, lv, g) : 0, b = ag ? basicN(ag, lv, g) : 0, paid = !!A && willPay(lv, org0), scopeT = g ? `${esc(findOrg(ORG, g)?.name || '')} ` : '';
-  openModal(MH(`${LV[lv]} 계정 생성`, '입력한 메일로 초기 비밀번호 설정 안내가 갑니다. 로그인할 때마다 이 메일로 인증번호를 받습니다.') + `<div class="m-b">
-    ${lvs.length > 1 ? `<div class="fld" style="margin-bottom:12px"><label>위계</label><span class="seg">${lvs.map(l => `<button type="button" class="${l === lv ? 'on' : ''}" data-act="acc-lv" data-lv="${l}">${LV[l]}</button>`).join('')}</span></div>` : ''}
-    ${A ? `<div class="callout ${paid ? 'warn' : 'info'}" style="margin-bottom:14px">${ic(paid ? 'coins' : 'check')}<div>${scopeT}${LV[lv]} 기본 제공 ${b}개 중 ${Math.min(n, b)}개 사용 중 — ${paid ? `이 계정은 <b>유료 추가 계정</b>입니다 (월 ${won(A.extra[lv])}, 실제 이용한 달만 과금).` : '기본 제공 수량 안에서 생성됩니다 (추가 비용 없음).'}</div></div>` : ''}
-    <div class="fgrid"><div class="fld full"><label for="iOrg">소속<span class="req">*</span></label><select class="select" id="iOrg" style="width:100%">${orgs.map(o => `<option value="${o.id}" ${keep.org === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}</select></div>
+  const n = ag && lv !== 'staff' ? acctN(ag, lv, g) : 0, b = ag && lv !== 'staff' ? basicN(ag, lv, g) : 0, paid = !!A && lv !== 'staff' && willPay(lv, org0), scopeT = g ? `${esc(findOrg(ORG, g)?.name || '')} ` : '';
+  openModal(MH(`${lv === 'staff' ? '소속 직원' : LV[lv] + ' 관리자'} 계정 등록`, '아이디 · 초기 비밀번호를 발급합니다. 첫 로그인 인증번호는 발급하는 관리자(나)의 메일로 가고, 사용자는 본인 메일로 바꿔 다시 인증해야 이용할 수 있습니다.') + `<div class="m-b">
+    ${lvs.length > 1 ? `<div class="fld" style="margin-bottom:12px"><label>위계</label><span class="seg">${lvs.map(l => `<button type="button" class="${l === lv ? 'on' : ''}" data-act="acc-lv" data-lv="${l}">${l === 'staff' ? '소속 직원' : LV[l] + ' 관리자'}</button>`).join('')}</span></div>` : ''}
+    ${A && lv !== 'staff' ? `<div class="callout ${paid ? 'warn' : 'info'}" style="margin-bottom:14px">${ic(paid ? 'coins' : 'check')}<div>${scopeT}${LV[lv]} 기본 제공 ${b}개 중 ${Math.min(n, b)}개 사용 중 — ${paid ? `이 계정은 <b>유료 추가 계정</b>입니다 (월 ${won(A.extra[lv])}, 실제 이용한 달만 과금).` : '기본 제공 수량 안에서 생성됩니다 (추가 비용 없음).'}</div></div>` : ''}
+    <div class="fgrid"><div class="fld full"><label for="iOrg">소속<span class="req">*</span>${lv === 'staff' ? ' <span class="muted" style="font-weight:400">— 내 조직에 자동 연결</span>' : ''}</label><select class="select" id="iOrg" style="width:100%" ${lv === 'staff' ? 'disabled' : ''}>${orgs.map(o => `<option value="${o.id}" ${keep.org === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}</select></div>
     <div class="fld"><label for="iName">이름<span class="req">*</span></label><input class="input" id="iName" value="${esc(keep.name || '')}" style="width:100%"></div><div class="fld"><label for="iId">아이디<span class="req">*</span></label><input class="input mono" id="iId" value="${esc(keep.id || '')}" style="width:100%"></div>
-    <div class="fld full"><label for="iMail">메일 (인증번호 수신)<span class="req">*</span></label><input class="input" id="iMail" type="email" value="${esc(keep.mail || '')}" style="width:100%"></div></div></div>` + okBtns(paid ? '다음' : '생성'), () => {
-    const v = { org:$('#iOrg').value, name:$('#iName').value.trim(), id:$('#iId').value.trim(), mail:$('#iMail').value.trim() };
-    if (!v.name || !v.id || !/^\S+@\S+\.\S+$/.test(v.mail)) { toast('이름 · 아이디 · 메일을 확인하세요.', true); return; } if (ACCTS.some(x => x.id === v.id)) { toast('이미 있는 아이디입니다.', true); return; }
-    const create = consent => { ACCTS.push({ id:v.id, name:v.name, lv, org:v.org, orgName:findOrg(ORG, v.org)?.name || '', status:'정상', last:'—', cust:0, mail:v.mail, paid, consent });
-      addLog('계정 발급', `${v.id} (${LV[lv]}${paid ? ' · 유료 추가' : ''})${consent ? ` · 과금 안내 확인 ${consent.at} ${consent.by}` : ''}`); closeModal(); render(); toast(`${v.id} 계정을 생성했습니다 · 안내 메일 발송`); };
+    <div class="fld full"><label for="iPw">초기 비밀번호</label><input class="input mono" id="iPw" value="${esc(pw0)}" readonly style="width:100%"></div>
+    <div class="fld full"><label>첫 로그인 인증번호 받는 메일</label><div class="ink2" style="font-size:13.5px;padding:6px 0">${esc(myMail)} <span class="muted">(발급 관리자 · ${esc(me().id)})</span></div></div></div></div>` + okBtns(paid ? '다음' : '등록'), () => {
+    const v = { org:$('#iOrg').value, name:$('#iName').value.trim(), id:$('#iId').value.trim(), pw:$('#iPw').value };
+    if (!v.name || !/^[a-z0-9][a-z0-9-]{3,}$/i.test(v.id)) { toast('이름과 아이디(영문 · 숫자 · - 4자 이상)를 확인하세요.', true); return; } if (ACCTS.some(x => x.id === v.id)) { toast('이미 있는 아이디입니다.', true); return; }
+    const create = consent => { ACCTS.push({ id:v.id, name:v.name, lv, org:v.org, orgName:findOrg(ORG, v.org)?.name || '', status:'정상', last:'—', cust:0, mail:myMail, pend:'최초 인증 대기', by:me().id, paid, consent });
+      addLog('계정 발급', `${v.id} (${LV[lv]}${paid ? ' · 유료 추가' : ''})${consent ? ` · 과금 안내 확인 ${consent.at} ${consent.by}` : ''}`); closeModal(); render(); toast(`${v.id} 계정을 등록했습니다 · 아이디와 초기 비밀번호를 전달하세요`); };
     if (!paid) { create(null); return; }
     /* 과금 안내 팝업 — 취소 · 확인 후 계정 생성 / 확인 일시 · 확인자 기록 */
     openModal(MH('유료 관리자 계정 안내', `${esc(v.id)} · ${LV[lv]} · 월 ${won(A.extra[lv])}`) + `<div class="m-b"><div class="notice-box">${PAID_NOTICE}</div><p class="muted" style="font-size:12.5px;margin:12px 0 0">확인 일시와 확인자(${me().id})가 기록됩니다.</p></div>`
       + `<div class="m-f"><button class="btn" data-act="acc-back">취소</button><button class="btn btn-p" data-act="modal-ok">확인 후 계정 생성</button></div>`, () => create({ at:`${TODAY} ${nowT()}`, by:me().id }));
     MD.back = () => accNew(lv, v);
   });
-  MD.keep = () => ({ org:$('#iOrg')?.value, name:$('#iName')?.value, id:$('#iId')?.value, mail:$('#iMail')?.value });
+  MD.keep = () => ({ org:$('#iOrg')?.value, name:$('#iName')?.value, id:$('#iId')?.value, pw:$('#iPw')?.value });
   /* 서브는 총괄 사무소별로 기본 수량이 달라 소속을 바꾸면 안내를 다시 계산 */
   if (lv === 'sub' && A) $('#iOrg')?.addEventListener('change', () => accNew(lv, MD.keep()));
 }
@@ -1763,12 +1793,23 @@ function Logs() {
 
 /* ---------- A1 로그인 · 메일 인증 ---------- */
 const LT = {
-  ko:{ h:'파트너 관리자 로그인', p:'상위 관리자가 발급한 계정으로 로그인합니다.', id:'아이디', pw:'비밀번호', next:'다음', help:'계정이 없거나 잠겼으면 소속 총괄 관리자에게 문의하세요.', oh:'메일 인증', op:m => `<b>${m}</b>(으)로 보낸 6자리 인증번호를 입력하세요.`, left:'남은 시간', resend:'재발송', go:'인증하고 시작하기', back:'이전으로', lock:'5회 틀리면 계정이 잠깁니다.', demo:'데모 계정' },
-  en:{ h:'Partner Admin Sign in', p:'Sign in with the account issued by your upper-level admin.', id:'Account ID', pw:'Password', next:'Next', help:'No account or locked? Contact your general manager.', oh:'Email verification', op:m => `Enter the 6-digit code sent to <b>${m}</b>.`, left:'Time left', resend:'Resend', go:'Verify and continue', back:'Back', lock:'Your account locks after 5 wrong attempts.', demo:'Demo accounts' },
+  ko:{ lang:'언어', f:['관리자 인증','본인 메일 등록','메일 재인증'], fh:'최초 로그인 인증', fp:(by, m) => `처음 로그인하는 계정입니다. 계정을 발급한 관리자(<b>${by}</b>)의 메일 <b>${m}</b>로 6자리 인증번호를 보냈습니다. 발급 관리자에게 받아 입력하세요.`, fgo:'인증 확인',
+    eh:'본인 메일 등록', ep:'앞으로 로그인 인증번호를 받을 본인 메일을 등록하세요. 등록한 메일로 한 번 더 인증해야 이용할 수 있습니다.', em:'본인 메일', esend:'인증번호 받기', ebad:'메일 형식을 확인하세요.',
+    vh:'본인 메일 인증', vgo:'인증 완료하고 시작하기', firstDemo:'최초 로그인으로 체험', badId:'데모 계정 아이디를 입력하세요 (kt-ops01 · hi-master · vn-gm · vn-hn-01)', six:'인증번호 6자리를 입력하세요.', sent:'인증번호를 다시 보냈습니다.', note:'로그인 성공·실패·잠금과 접속 IP가 관리자 사용 로그에 기록됩니다.',
+    h:'파트너 관리자 로그인', p:'상위 관리자가 발급한 계정으로 로그인합니다.', id:'아이디', pw:'비밀번호', next:'다음', help:'계정이 없거나 잠겼으면 소속 총괄 관리자에게 문의하세요.', oh:'메일 인증', op:m => `<b>${m}</b>(으)로 보낸 6자리 인증번호를 입력하세요.`, left:'남은 시간', resend:'재발송', go:'인증하고 시작하기', back:'이전으로', lock:'5회 틀리면 계정이 잠깁니다.', demo:'데모 계정' },
+  en:{ lang:'Language', f:['Admin code','Your email','Verify email'], fh:'First sign-in verification', fp:(by, m) => `This is your first sign-in. We sent a 6-digit code to <b>${m}</b>, the email of the admin who issued your account (<b>${by}</b>). Get the code from that admin and enter it.`, fgo:'Verify',
+    eh:'Register your email', ep:'Register your own email to receive sign-in codes. You must verify it once more before you can continue.', em:'Your email', esend:'Send code', ebad:'Check the email format.',
+    vh:'Verify your email', vgo:'Verify and continue', firstDemo:'Try first sign-in', badId:'Enter a demo account ID (kt-ops01 · hi-master · vn-gm · vn-hn-01)', six:'Enter the 6-digit code.', sent:'We sent a new code.', note:'Sign-in success, failure, lock and IP address are recorded in the admin activity log.',
+    h:'Partner Admin Sign in', p:'Sign in with the account issued by your upper-level admin.', id:'Account ID', pw:'Password', next:'Next', help:'No account or locked? Contact your general manager.', oh:'Email verification', op:m => `Enter the 6-digit code sent to <b>${m}</b>.`, left:'Time left', resend:'Resend', go:'Verify and continue', back:'Back', lock:'Your account locks after 5 wrong attempts.', demo:'Demo accounts' },
   vi:{ h:'Đăng nhập quản trị đối tác', p:'Đăng nhập bằng tài khoản do quản trị cấp trên cấp.', id:'Tài khoản', pw:'Mật khẩu', next:'Tiếp tục', help:'Chưa có tài khoản hoặc bị khóa? Liên hệ quản lý văn phòng tổng.', oh:'Xác thực email', op:m => `Nhập mã 6 chữ số đã gửi tới <b>${m}</b>.`, left:'Còn lại', resend:'Gửi lại', go:'Xác thực và bắt đầu', back:'Quay lại', lock:'Sai 5 lần, tài khoản sẽ bị khóa.', demo:'Tài khoản demo' },
 };
 function Login() {
-  const t = LT[S.lang], role = ROLE_BY_ID[S.loginId] || 'head';
+  const t = LT[S.lang] || LT.ko, role = ROLE_BY_ID[S.loginId] || 'head', fi = { f1:0, f2:1, f3:2 }[S.step];
+  const otpF = (go) => `<form id="of"><div class="otp">${Array.from({ length:6 }, (_, i) => `<input class="input" inputmode="numeric" maxlength="1" aria-label="${i + 1}" value="${'481072'[i]}">`).join('')}</div>
+      <div class="lg-row"><span class="ink2">${t.left} <span class="timer" id="otpt">05:00</span></span><button type="button" class="linkbtn" id="resend" disabled>${t.resend} (<span id="rs">60</span>s)</button></div>
+      <button class="btn btn-p btn-block" type="submit">${go}</button><button class="btn btn-ghost btn-block" type="button" id="back" style="margin-top:8px;font-size:14px;font-weight:500">${t.back}</button>
+      <p class="muted" style="font-size:12.5px;margin:14px 0 0">${t.lock}</p></form>`;
+  const steps = fi === undefined ? '' : `<ol class="lg-steps">${t.f.map((x, i) => `<li class="${i < fi ? 'done' : i === fi ? 'on' : ''}"><span>${i < fi ? ic('check') : i + 1}</span>${x}</li>`).join('')}</ol>`;
   return `<div class="login">
   <section class="lg-vis"><div class="lg-in">${logo('h', 'mono-w')}
    <div class="lg-mid"><div class="scanwrap" aria-hidden="true"><div class="scanbox">
@@ -1779,33 +1820,58 @@ function Login() {
     <div class="lg-copy"><h1>여권이 확인되면,<br>비즈니스가 켜집니다.</h1><p>KT 외국인 휴대폰 개통 · Partner Admin</p></div></div>
     <div class="lg-feat"><div><b>여권인증 결과 · 검수</b><span>OCR · 안면 일치 · 라이브니스 결과를 원본과 대조</span></div><div><b>필수 서류 · KT 제출 PDF</b><span>비자·미성년 구분별 서류를 모아 한 개로 발급</span></div><div><b>개통 후 즉시 삭제</b><span>개인정보 최소 보관 · 모든 열람 기록</span></div></div>
     <div class="lg-copyr">© 2026 LORDSYSTEM Co., Ltd. All rights reserved.</div></div></section>
-  <section class="lg-form"><div class="lg-card">${logo('h')}
+  <section class="lg-form"><div class="lg-card"><div class="lg-top">${logo('h')}<span class="seg lg-lang" role="group" aria-label="${t.lang}">${[['ko','한국어'],['en','English']].map(([k, l]) => `<button type="button" class="${S.lang === k ? 'on' : ''}" data-act="lg-lang" data-l="${k}" aria-pressed="${S.lang === k}">${l}</button>`).join('')}</span></div>${steps}
 
     ${S.step === 1 ? `<h2>${t.h}</h2><p>${t.p}</p>
       <form id="lf"><div class="fld"><label for="lid">${t.id}</label><input class="input input-lg" id="lid" style="width:100%" value="${esc(S.loginId)}" autocomplete="username" required></div>
       <div class="fld"><label for="lpw">${t.pw}</label><input class="input input-lg" id="lpw" type="password" style="width:100%" value="prototype" autocomplete="current-password" required></div>
       <p class="muted" style="font-size:12.5px;margin:-4px 0 18px">${t.help}</p>
       <button class="btn btn-p btn-block" type="submit">${t.next}</button></form>
-      <div class="demo-acc">${t.demo}${Object.entries(ROLE_BY_ID).map(([id, r]) => `<button data-act="demo" data-id="${id}">${LV[r]} · ${id}</button>`).join('')}</div>`
-    : `<h2>${t.oh}</h2><p>${t.op(ME[role].mail)}</p>
-      <form id="of"><div class="otp">${Array.from({ length:6 }, (_, i) => `<input class="input" inputmode="numeric" maxlength="1" aria-label="인증번호 ${i + 1}번째" value="${'481072'[i]}">`).join('')}</div>
-      <div class="lg-row"><span class="ink2">${t.left} <span class="timer" id="otpt">05:00</span></span><button type="button" class="linkbtn" id="resend" disabled>${t.resend} (<span id="rs">60</span>s)</button></div>
-      <button class="btn btn-p btn-block" type="submit">${t.go}</button><button class="btn btn-ghost btn-block" type="button" id="back" style="margin-top:8px;font-size:14px;font-weight:500">${t.back}</button>
-      <p class="muted" style="font-size:12.5px;margin:14px 0 0">${t.lock}</p></form>`}
-    <div class="lg-note">${ic('shieldl')}<span>로그인 성공·실패·잠금과 접속 IP가 관리자 사용 로그에 기록됩니다.</span></div>
+      <div class="demo-acc">${t.demo}${Object.entries(ROLE_BY_ID).map(([id, r]) => `<button data-act="demo" data-id="${id}">${LV[r]} · ${id}</button>`).join('')}
+        <label class="lg-first"><input type="checkbox" id="firstDemo" ${S.firstDemo ? 'checked' : ''}> ${t.firstDemo}</label></div>`
+    : S.step === 'f1' ? `<h2>${t.fh}</h2><p>${t.fp(ISSUER[role].by, ISSUER[role].mail)}</p>${otpF(t.fgo)}`
+    : S.step === 'f2' ? `<h2>${t.eh}</h2><p>${t.ep}</p>
+      <form id="ef"><div class="fld"><label for="lmail">${t.em}</label><input class="input input-lg" id="lmail" type="email" style="width:100%" value="${esc(S.newMail || '')}" placeholder="name@company.com" autocomplete="email" required></div>
+      <button class="btn btn-p btn-block" type="submit">${t.esend}</button><button class="btn btn-ghost btn-block" type="button" id="back" style="margin-top:8px;font-size:14px;font-weight:500">${t.back}</button></form>`
+    : S.step === 'f3' ? `<h2>${t.vh}</h2><p>${t.op(esc(S.newMail))}</p>${otpF(t.vgo)}`
+    : `<h2>${t.oh}</h2><p>${t.op(ME[role].mail)}</p>${otpF(t.go)}`}
+    <div class="lg-note">${ic('shieldl')}<span>${t.note}</span></div>
   </div></section></div>`;
 }
 function bindLogin() {
-  const lf = $('#lf'); if (lf) lf.onsubmit = e => { e.preventDefault(); const id = $('#lid').value.trim(); if (!ROLE_BY_ID[id]) { toast('데모 계정 아이디를 입력하세요 (kt-ops01 · hi-master · vn-gm · vn-hn-01)', true); return; } S.loginId = id; S.step = 2; render(); };
+  const t = LT[S.lang] || LT.ko;
+  const fd = $('#firstDemo'); if (fd) fd.onchange = () => { S.firstDemo = fd.checked; };
+  /* 최초 로그인 대상: 아직 본인 메일 인증을 하지 않은 계정 (데모 계정은 「최초 로그인으로 체험」 체크 시) */
+  const lf = $('#lf'); if (lf) lf.onsubmit = e => { e.preventDefault(); const id = $('#lid').value.trim(); if (!ROLE_BY_ID[id]) { toast(t.badId, true); return; }
+    S.loginId = id; const ac = ACCTS.find(x => x.id === id); S.step = S.firstDemo || ac?.pend === '최초 인증 대기' ? 'f1' : 2; S.newMail = ''; render(); };
+  const ef = $('#ef'); if (ef) { ef.onsubmit = e => { e.preventDefault(); const m = $('#lmail').value.trim(); if (!/^\S+@\S+\.\S+$/.test(m)) { toast(t.ebad, true); return; } S.newMail = m; S.step = 'f3'; render(); }; $('#back').onclick = () => { S.step = 'f1'; render(); }; return; }
   const of = $('#of'); if (!of) return;
   const ins = $$('.otp input'); ins.forEach((inp, i) => { inp.oninput = () => { inp.value = inp.value.replace(/\D/g, ''); if (inp.value && ins[i + 1]) ins[i + 1].focus(); }; inp.onkeydown = e => { if (e.key === 'Backspace' && !inp.value && ins[i - 1]) ins[i - 1].focus(); }; });
   ins[0].onpaste = e => { const v = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6); if (v.length === 6) { e.preventDefault(); ins.forEach((x, i) => x.value = v[i]); ins[5].focus(); } };
-  $('#back').onclick = () => { S.step = 1; render(); };
+  $('#back').onclick = () => { S.step = S.step === 'f3' ? 'f2' : 1; render(); };
   let left = 300, rs = 60; clearInterval(otpTimer);
   otpTimer = setInterval(() => { left--; rs--; const t = $('#otpt'); if (!t) return clearInterval(otpTimer); t.textContent = `${pad(Math.floor(Math.max(0, left) / 60))}:${pad(Math.max(0, left) % 60)}`; const r = $('#resend'); if (rs <= 0) { r.disabled = false; r.textContent = LT[S.lang].resend; } else $('#rs').textContent = rs; }, 1000);
-  $('#resend').onclick = () => { left = 300; rs = 60; $('#resend').disabled = true; $('#resend').innerHTML = `${LT[S.lang].resend} (<span id="rs">60</span>s)`; toast('인증번호를 다시 보냈습니다.'); };
-  of.onsubmit = e => { e.preventDefault(); if (ins.some(x => !x.value)) { toast('인증번호 6자리를 입력하세요.', true); return; }
-    S.role = ROLE_BY_ID[S.loginId]; S.authed = true; S.step = 1; S.tree = null; saveAuth(); clearInterval(otpTimer); addLog('로그인', '메일 인증번호 확인'); location.hash = '#/dashboard'; toast(`${me().name} 님, 로그인되었습니다.`); };
+  $('#resend').onclick = () => { left = 300; rs = 60; $('#resend').disabled = true; $('#resend').innerHTML = `${LT[S.lang].resend} (<span id="rs">60</span>s)`; toast(t.sent); };
+  of.onsubmit = e => { e.preventDefault(); if (ins.some(x => !x.value)) { toast(t.six, true); return; }
+    if (S.step === 'f1') { clearInterval(otpTimer); S.step = 'f2'; render(); return; }
+    const first = S.step === 'f3';
+    S.role = ROLE_BY_ID[S.loginId]; S.authed = true; S.step = 1; S.tree = null; saveAuth(); clearInterval(otpTimer);
+    if (first) { const ac = ACCTS.find(x => x.id === S.loginId); if (ac) { ac.mail = S.newMail; ac.pend = null; } S.firstDemo = false;
+      addLog('최초 로그인 인증', `발급 관리자 메일 인증 → 본인 메일 등록 · 재인증 (${S.newMail.replace(/^(.).*(@.*)$/, '$1•••••$2')})`); }
+    else addLog('로그인', '메일 인증번호 확인');
+    location.hash = '#/dashboard'; toast(`${me().name} 님, 로그인되었습니다.`); };
+}
+
+/* 내 메일 변경 — 새 메일로 인증번호를 받아 확인해야 바뀜 */
+function myMail() {
+  const ac = ACCTS.find(x => x.id === me().id);
+  openModal(MH('내 메일 변경', '로그인 인증번호를 받을 메일입니다. 새 메일로 받은 인증번호를 확인해야 바뀝니다.') + `<div class="m-b"><dl class="kv" style="margin-bottom:14px"><dt>현재 메일</dt><dd>${esc(ac?.mail || me().mail)}</dd></dl>
+    <div class="fld"><label for="mmNew">새 메일</label><div style="display:flex;gap:6px"><input class="input" id="mmNew" type="email" style="flex:1"><button type="button" class="btn" id="mmSend">인증번호 받기</button></div></div>
+    <div class="fld" style="margin-top:12px"><label for="mmCode">인증번호 6자리</label><input class="input mono" id="mmCode" inputmode="numeric" maxlength="6" disabled style="width:100%"></div></div>` + okBtns('변경'), () => {
+    const m = $('#mmNew').value.trim(), c = $('#mmCode').value.trim();
+    if (!MD.sent || MD.sent !== m) { toast('새 메일로 인증번호를 먼저 받으세요.', true); return; } if (!/^\d{6}$/.test(c)) { toast('인증번호 6자리를 입력하세요.', true); return; }
+    if (ac) ac.mail = m; addLog('메일 변경', `인증번호 확인 · ${m.replace(/^(.).*(@.*)$/, '$1•••••$2')}`); closeModal(); render(); toast('메일을 변경했습니다. 다음 로그인부터 새 메일로 인증번호가 갑니다.'); });
+  $('#mmSend').onclick = () => { const m = $('#mmNew').value.trim(); if (!/^\S+@\S+\.\S+$/.test(m)) { toast('메일 형식을 확인하세요.', true); return; } MD.sent = m; $('#mmCode').disabled = false; $('#mmCode').focus(); toast('인증번호를 보냈습니다.'); };
 }
 
 /* =====================================================================
@@ -1904,7 +1970,9 @@ document.addEventListener('click', e => {
     case 'burger': $('#sb').classList.toggle('open'); break;
     case 'close-modal': closeModal(); break;
     case 'modal-ok': MD?.onOk?.(); break;
-    case 'demo': S.loginId = a.dataset.id; render(); break;
+    case 'demo': S.loginId = a.dataset.id; S.firstDemo = $('#firstDemo')?.checked || false; render(); break;
+    case 'lg-lang': S.lang = a.dataset.l; try { localStorage.setItem('sg_lang', S.lang); } catch (e) {} document.documentElement.lang = S.lang; render(); break;
+    case 'my-mail': myMail(); break;
     /* dashboard */
     case 'stage': e.preventDefault(); H.stage = a.dataset.s; S.range.hist = [DP_MIN, TODAY]; location.hash = '#/history'; break;
     case 'go-org': S.tree = a.dataset.o; location.hash = '#/accounts'; break;
@@ -1954,7 +2022,7 @@ document.addEventListener('click', e => {
       openModal(MH(`${ac.id} 계정 ${stop ? '중지' : '재개'}`, `${esc(ac.name)} · ${LV[ac.lv]}`) + `<div class="m-b ink2" style="font-size:13.5px">${stop ? `중지하면 로그인할 수 없습니다.${ac.paid ? (used ? ` <b>이번 달 이미 이용(${used.at.slice(5)})해 당월 이용료는 그대로 청구됩니다.</b>` : ' 이번 달 아직 이용하지 않아 과금되지 않습니다.') : ''}` : '다시 로그인할 수 있게 합니다.'}</div>` + okBtns(stop ? '중지' : '재개', stop), () => { ac.status = stop ? '중지' : '정상'; addLog(stop ? '계정 중지' : '계정 재개', ac.id); closeModal(); render(); toast(`${ac.id} 계정을 ${stop ? '중지' : '재개'}했습니다.`); }); break; }
     case 'acc-use': { const ac = ACCTS.find(x => x.id === a.dataset.id); markUse(ac.id, '고객 상세 조회 (데모)'); render(); toast(`${ac.id} 최초 이용 기록 · ${CUR_M.slice(5)}월 ${LV[ac.lv]} 추가 계정 이용료 과금`); break; }
     case 'unlock': { const ac = ACCTS.find(x => x.id === a.dataset.id); ac.status = '정상'; addLog('잠금 해제', ac.id); render(); toast(`${ac.id} 잠금을 해제했습니다.`); break; }
-    case 'acc-edit': { const ac = ACCTS.find(x => x.id === a.dataset.id); openModal(MH('계정 수정', ac.id) + `<div class="m-b"><div class="fgrid"><div class="fld"><label for="eName">이름</label><input class="input" id="eName" value="${esc(ac.name)}" style="width:100%"></div><div class="fld"><label for="eSt">상태</label><select class="select" id="eSt" style="width:100%">${['정상','잠금','휴면','중지'].map(s => `<option ${s === ac.status ? 'selected' : ''}>${s}</option>`).join('')}</select></div><div class="fld full"><label for="eMail">메일 (인증번호 수신)</label><input class="input" id="eMail" value="${esc(ac.mail)}" style="width:100%"></div></div></div>` + okBtns('저장'), () => { ac.name = $('#eName').value.trim() || ac.name; ac.status = $('#eSt').value; ac.mail = $('#eMail').value.trim() || ac.mail; addLog('계정 수정', ac.id); closeModal(); render(); toast('저장했습니다.'); }); break; }
+    case 'acc-edit': { const ac = ACCTS.find(x => x.id === a.dataset.id); openModal(MH('계정 수정', ac.id) + `<div class="m-b"><div class="fgrid"><div class="fld"><label for="eName">이름</label><input class="input" id="eName" value="${esc(ac.name)}" style="width:100%"></div><div class="fld"><label for="eSt">상태</label><select class="select" id="eSt" style="width:100%">${['정상','잠금','휴면','중지'].map(s => `<option ${s === ac.status ? 'selected' : ''}>${s}</option>`).join('')}</select></div><div class="fld full"><label for="eMail">메일 (인증번호 수신)</label><input class="input" id="eMail" value="${esc(ac.mail)}" style="width:100%"></div></div></div>` + okBtns('저장'), () => { ac.name = $('#eName').value.trim() || ac.name; ac.status = $('#eSt').value; const nm = $('#eMail').value.trim(); if (nm && nm !== ac.mail) { if (!/^\S+@\S+\.\S+$/.test(nm)) { toast('메일 형식을 확인하세요.', true); return; } ac.mail = nm; ac.pend = ac.pend || '메일 재인증 대기'; } addLog('계정 수정', ac.id); closeModal(); render(); toast('저장했습니다.'); }); break; }
     case 'acc-del': { const ac = ACCTS.find(x => x.id === a.dataset.id), sib = ACCTS.filter(x => x.lv === ac.lv && x.org === ac.org && x.id !== ac.id);
       const used = usedThisMonth(ac.id);
       openModal(MH(`${ac.id} 계정 삭제`, `${esc(ac.name)} · ${esc(ac.orgName)}`) + `<div class="m-b">${ac.paid ? `<div class="callout ${used ? 'bad' : 'info'}" style="margin-bottom:12px">${ic('coins')}<div>${used ? `유료 추가 계정 · 이번 달 이용(${used.at.slice(5)}) — <b>삭제해도 당월 이용료는 환불되지 않습니다.</b> 최초 이용 기록은 삭제 후에도 보존됩니다.` : '유료 추가 계정 · 이번 달 미사용 — 삭제하면 과금되지 않습니다.'}</div></div>` : ''}<div class="callout warn">${ic('alert')}<div>이 계정이 등록한 고객 <b>${ac.cust}명</b>을 넘겨받을 계정을 고르세요. (협의 필요 항목)</div></div><div class="fld" style="margin-top:14px"><label for="xfer">고객 이관 대상</label><select class="select" id="xfer" style="width:100%">${sib.map(s => `<option>${s.id} · ${esc(s.name)}</option>`).join('')}<option>상위 조직으로 이관</option></select></div></div>` + okBtns('삭제', true), () => { ACCTS.splice(ACCTS.indexOf(ac), 1); addLog('계정 삭제', `${ac.id} · 고객 이관 → ${$('#xfer').value.split(' ')[0]}`); closeModal(); render(); toast(`${ac.id} 계정을 삭제했습니다.`); }); break; }
