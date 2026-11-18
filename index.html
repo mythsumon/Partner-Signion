@@ -1472,7 +1472,21 @@ function render() {
   else body = ({ dashboard:Dashboard, history:History, customer:() => Customer(arg), start:Start, usage:Usage, contract:Contract, settle:Settle, accounts:Accounts, retention:Retention, logs:Logs })[p]?.() ?? Dashboard();
   root.innerHTML = Shell(p, Banner(p) + body, arg);
   if (r !== lastR) window.scrollTo(0, 0); lastR = r;
-  bindPage(p);
+  bindPage(p); roPaint(p);
+}
+/* KT 헤드마스터 = 조회 전용 — 고객 · 서류 · 검수 · 발급 · 개통 등 수정 기능 없음 (조회 · 마스킹 해제 · 다운로드는 가능, 사용 로그 기록)
+   서버에서도 KT 계정의 수정 요청을 거부해야 함 */
+const KT_RO = new Set(['review-sel','hck','hck-all','memo','review','up','reup','rm','mv','tok','issue','form-up','done','ret','ret-save','pack-open','acc-new','acc-edit','acc-stop','acc-del','acc-use','unlock']);
+const isRO = () => S.role === 'head';
+function roPaint(p) {
+  if (!isRO()) return;
+  const m = $('main.content'); if (!m) return;
+  m.querySelectorAll('[data-act]').forEach(el => { if (KT_RO.has(el.dataset.act)) el.remove(); });
+  m.querySelectorAll('th.ck, td.ck').forEach(el => el.remove());
+  m.querySelectorAll('#memo, #fname').forEach(el => { el.readOnly = true; el.setAttribute('aria-readonly', 'true'); });
+  m.querySelectorAll('#ord li[draggable]').forEach(li => li.removeAttribute('draggable'));
+  m.querySelectorAll('[data-drop]').forEach(el => el.removeAttribute('data-drop'));
+  if (['customer','history'].includes(p)) m.querySelector('.ph')?.insertAdjacentHTML('afterend', `<div class="callout info kt-ro" style="margin-bottom:16px">${ic('lock')}<div><b>KT 조회 전용</b> — 검수 · 메모 · 서류 업로드/삭제 · PDF 발급 · 개통 완료는 대리점 관리자가 처리합니다. 마스킹 해제 · 다운로드는 사용 로그에 기록됩니다.</div></div>`);
 }
 function crumb(p, arg) {
   const m = MENU.find(x => x.id === p);
@@ -1508,7 +1522,7 @@ function Shell(p, body, arg) {
 const PH = (title, desc, acts = '', pre = '') => `<div class="ph"><div>${pre}<h1>${title}</h1>${desc ? `<p>${desc}</p>` : ''}</div>${acts ? `<div class="acts">${acts}</div>` : ''}</div>`;
 const KPI = (l, v, u, d, icon, cls = '') => `<div class="card kpi ${cls}"><div class="l">${icon ? ic(icon) : ''}${l}</div><div class="v">${v}<small>${u}</small></div>${d ? `<div class="d">${d}</div>` : ''}</div>`;
 const Card = (title, body, opt = {}) => `<section class="card" ${opt.style ? `style="${opt.style}"` : ''}><div class="card-h"><h3>${title}</h3>${opt.sub ? `<span class="sub">${opt.sub}</span>` : ''}${opt.r ? `<div class="r">${opt.r}</div>` : ''}</div><div class="${opt.flush ? '' : 'card-b'}">${body}</div></section>`;
-const Denied = p => PH('접근 권한이 없습니다', `「${MENU.find(m => m.id === p)?.l || p}」 메뉴는 ${LV[S.role]} 권한에 제공되지 않습니다.`) + `<div class="callout info">${ic('shieldl')}<div>여권인증 · 고객 · 문서 관리 기능은 마스터 · 총괄 · 서브 모두 같고 데이터 접근 범위만 다릅니다. KT 헤드마스터는 여권인증 없이 전체 대리점 데이터를 조회 · 관리합니다. 계약 · 요금 · 월 이용료 · 계정 관리는 마스터(대리점)와 KT 헤드마스터 메뉴입니다.</div></div>`;
+const Denied = p => PH('접근 권한이 없습니다', `「${MENU.find(m => m.id === p)?.l || p}」 메뉴는 ${LV[S.role]} 권한에 제공되지 않습니다.`) + `<div class="callout info">${ic('shieldl')}<div>여권인증 · 고객 · 문서 관리 기능은 마스터 · 총괄 · 서브 모두 같고 데이터 접근 범위만 다릅니다. KT 헤드마스터는 여권인증 없이 전체 대리점 데이터를 조회만 합니다(수정 불가). 계약 · 요금 · 월 이용료 · 계정 관리는 마스터(대리점)와 KT 헤드마스터 메뉴입니다.</div></div>`;
 /* 한도 경고 · 초과 안내 — 보관 용량 잔여 10% 경고 / 초과 시 업로드 · 다운로드 차단 / 문서 처리 월 한도 도달 */
 function Banner(p) {
   if (S.role === 'head') {
@@ -2100,6 +2114,7 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.dd-wrap') || (a && a.dataset.act !== 'dd')) $$('.dd-wrap.open').forEach(x => x.classList.remove('open'));
   if (!a) { if (e.target.id === 'mscrim') closeModal(); if (!e.target.closest('.sb') && !e.target.closest('.burger')) $('#sb')?.classList.remove('open'); return; }
   const act = a.dataset.act, H = S.hist;
+  if (isRO() && KT_RO.has(act)) { e.preventDefault(); toast('KT 헤드마스터는 조회 전용입니다.', true); return; }
   switch (act) {
     /* datepicker */
     case 'dp-open': if (DP.id === a.dataset.id) dpClose(); else dpOpen(a.dataset.id, a); break;
@@ -2213,7 +2228,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('mouseover', e => { const d = e.target.closest('#dpop .d'); if (d && DP.a && !DP.b && DP.hover !== d.dataset.d) { DP.hover = d.dataset.d; dpRepaintDays(); } });
 document.addEventListener('dragover', e => { const d = e.target.closest('[data-drop]'); if (!d) return; e.preventDefault(); d.classList.add('drag'); });
 document.addEventListener('dragleave', e => { const d = e.target.closest('[data-drop]'); if (d && !d.contains(e.relatedTarget)) d.classList.remove('drag'); });
-document.addEventListener('drop', e => { const d = e.target.closest('[data-drop]'); if (!d) return; e.preventDefault(); d.classList.remove('drag'); const [tx, doc] = d.dataset.drop.split('|'); addFiles(tx, doc, [...e.dataTransfer.files]); });
+document.addEventListener('drop', e => { const d = e.target.closest('[data-drop]'); if (!d || isRO()) return; e.preventDefault(); d.classList.remove('drag'); const [tx, doc] = d.dataset.drop.split('|'); addFiles(tx, doc, [...e.dataTransfer.files]); });
 const tip = $('#tip');
 document.addEventListener('mousemove', e => { const t = e.target.closest('[data-tip]'); if (!t) { tip.style.opacity = 0; return; } tip.innerHTML = t.dataset.tip; tip.style.opacity = 1; tip.style.left = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (e.clientY - 46) + 'px'; });
 window.addEventListener('resize', () => { if (DP.id) { dpRender(); dpPlace(); } });
