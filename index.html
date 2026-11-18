@@ -853,6 +853,82 @@ button.gsearch span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:elli
 .lg-steps li.done{border-color:var(--brand)}
 .lg-steps li.done span{background:var(--brand-100);color:var(--brand);border-color:var(--brand-100)}
 .lg-first{display:flex;align-items:center;gap:5px;width:100%;margin-top:4px;cursor:pointer;color:var(--ink-2)}
+
+/* 대시보드 v0.4 — 처리 단계 우선 · 인증/개통 추이 · 고객 구성 */
+.pipe-sum{display:flex;align-items:center;gap:28px;flex-wrap:wrap;margin-bottom:14px;font-size:13px;color:var(--ink-2)}
+.pipe-sum>div>span{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+.pipe-sum b{font-size:22px;color:var(--ink);margin-right:2px}
+.pipe-sum .ok b{color:var(--ok)}
+.pipe-prog{flex:1;min-width:220px;display:flex;align-items:center;gap:10px}
+.pipe-prog .trk{flex:1;height:10px;border-radius:999px;background:var(--line-2);overflow:hidden}
+.pipe-prog .trk i{display:block;height:100%;background:var(--ok);border-radius:999px}
+.pipe2 .stage .st-h{display:flex;align-items:center;gap:6px}
+.pipe2 .stage .st-n{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.pipe2 .stage .c small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px}
+.pipe2 .stage .st-bar{height:5px;border-radius:999px;background:var(--line-2);overflow:hidden;margin:6px 0 2px}
+.pipe2 .stage .st-bar i{display:block;height:100%;background:var(--brand);border-radius:999px}
+.pipe2 .stage.fin{background:color-mix(in srgb,var(--ok) 6%,var(--surface));border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.pipe2 .stage.fin .st-bar i{background:var(--ok)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.duo-k{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.duo-k span{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);font-weight:600}
+.duo-k b{display:block;font-size:28px;margin:4px 0 2px;color:var(--ink)}
+.duo-k b small{font-size:14px;font-weight:500;color:var(--muted);margin-left:2px}
+.duo-k em{font-style:normal;font-size:12px;color:var(--muted)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px}
+.sw-ok{background:var(--brand)} .sw-open{background:var(--ok)} .sw-m{background:var(--brand)} .sw-f{background:#E8590C}
+.chart2 .b-ok{fill:var(--brand)} .chart2 .b-open{fill:var(--ok)}
+.chart2 .col.we path{opacity:.45} .chart2 .col.today path{opacity:.55}
+.cmp{display:grid;gap:16px}
+.cmp-s h4{margin:0 0 6px;font-size:12.5px;color:var(--ink-2);font-weight:700}
+.cmp .hbar{padding:5px 0;grid-template-columns:128px minmax(0,1fr) 50px}
+.gbar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--line-2);gap:2px}
+.gbar i.m{background:var(--brand)} .gbar i.f{background:#E8590C}
+.glg{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--ink-2)}
+.glg span{display:flex;align-items:center;gap:6px}
+.cmp-al{display:grid;gap:8px;margin-top:14px}
+.rate{display:inline-flex;align-items:center;gap:8px}
+.rate .trk{width:60px;height:6px;border-radius:999px;background:var(--line-2);overflow:hidden}
+.rate .trk i{display:block;height:100%;background:var(--brand)}
+.tbl tfoot td{font-weight:700;border-top:1px solid var(--line);background:var(--surface-2)}
+@media (max-width:700px){.duo{grid-template-columns:1fr}}
+
+.dash-st{margin-bottom:12px}
+.dash-st .stage{padding:12px 14px}
+.dash-st .stage .c{font-size:22px;margin:8px 0 2px}
+.kpis-sm{gap:12px;margin-bottom:16px}
+.kpis-sm .kpi{padding:12px 16px}
+.kpis-sm .kpi .v{font-size:22px;margin-top:6px}
+.kpis-sm .kpi .d{margin-top:4px;font-size:12px}
+
+.mopt.dis{cursor:not-allowed;opacity:.55;background:var(--surface-2)}
+.mopt.dis>.i{color:var(--muted)}
+.aflow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;counter-reset:a}
+.aflow li{position:relative;display:flex;align-items:center;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.aflow li:not(:last-child)::after{content:"";position:absolute;right:-20px;top:50%;width:12px;height:12px;border-top:2px solid var(--muted);border-right:2px solid var(--muted);transform:translateY(-50%) rotate(45deg)}
+.aflow .n{width:22px;height:22px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--brand);color:#fff}
+.aflow .i{width:20px;height:20px;color:var(--brand)}
+.aflow b{font-size:14px}
+.aflow li.fin{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 7%,var(--surface))}
+.aflow li.fin .n{background:var(--ok)} .aflow li.fin .i{color:var(--ok)}
+@media(max-width:900px){.aflow{grid-template-columns:1fr 1fr}.aflow li::after{display:none}}
+
+.alog{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.alog-h{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 14px;border:0;background:var(--surface-2);font:inherit;color:inherit;cursor:pointer;text-align:left}
+.alog-h:hover{background:var(--brand-50)}
+.alog-t{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px}
+.alog-t .i{width:16px;height:16px;color:var(--brand)}
+.alog-t .muted{font-weight:400;font-size:12px}
+.alog-c{display:flex;align-items:center;gap:4px;font-size:12.5px;color:var(--ink-2)}
+.alog-c .i{width:14px;height:14px;transform:rotate(90deg);transition:transform .15s}
+.alog.on .alog-c .i{transform:rotate(-90deg)}
+.alog .tbl-wrap{border-top:1px solid var(--line)}
+.alog-tbl td,.alog-tbl th{font-size:12.5px;white-space:nowrap}
+.alog-tbl td:last-child{white-space:normal;min-width:120px}
+.ar{display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.ar .i{width:13px;height:13px}
+.ar-req{color:var(--info)} .ar-ok{color:var(--ok)} .ar-fail{color:var(--bad)} .ar-stop{color:var(--muted)}
+.ar-note{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -879,6 +955,7 @@ function logo(kind = 'h', cls = '') {
   return src.replace(/ width="[\d.]+" height="[\d.]+"/, ` class="logo ${cls}" role="img" aria-label="SIGNION"`).replace(/(l[hs])_clip_/g, `$1${n}_clip_`);
 }
 const IC = {
+  nfc:'<path d="M6 8.5a8 8 0 0 1 0 7"/><path d="M9.5 6a12 12 0 0 1 0 12"/><path d="M13 3.5a16 16 0 0 1 0 17"/><circle cx="3" cy="12" r="1"/>',
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   building:'<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M16 9h2a2 2 0 0 1 2 2v10"/><path d="M8 7h4M8 11h4M8 15h4M2 21h20"/>',
   sim:'<path d="M6 3h8l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><rect x="8" y="11" width="8" height="6" rx="1"/><path d="M12 11v6M8 14h8"/>',
@@ -1375,9 +1452,9 @@ const root = $('#root');
 /* v0.2 — C1 · C2 통합(인증 결과) · 여권인증 독립 서비스 메뉴(헤드마스터 제외) · C4 독립 메뉴 제거(고객 상세에서 발급)
    이용 · 정산: 대리점별 설정값(내부 어드민) 읽기 전용 반영 */
 const MENU = [
-  { sec:'업무' }, { id:'dashboard', l:'대시보드', i:'grid' }, { id:'history', l:'인증 결과', i:'shield' },
-  { sec:'서비스' }, { id:'start', l:'여권인증', i:'scan', only:['master','general','sub'] },
-  { sec:'이용 · 정산' }, { id:'usage', l:'이용 현황', i:'chart' }, { id:'contract', l:'계약 · 요금', i:'file', only:['head','master'] }, { id:'settle', l:'월 이용료', i:'coins', only:['head','master'] },
+  { id:'dashboard', l:'대시보드', i:'grid' },
+  { sec:'서비스' }, { id:'start', l:'여권인증', i:'scan', only:['master','general','sub'] }, { id:'history', l:'인증결과', i:'shield' },
+  { sec:'이용 & 정산' }, { id:'usage', l:'이용현황', i:'chart' }, { id:'contract', l:'계약 & 요금', i:'file', only:['head','master'] }, { id:'settle', l:'월 이용료', i:'coins', only:['head','master'] },
   { sec:'관리' }, { id:'accounts', l:'계정 관리', i:'users', only:['head','master','general','sub'] }, { id:'retention', l:'개인정보 보관', i:'lock' }, { id:'logs', l:'관리자 사용 로그', i:'log' },
 ];
 const route = () => (location.hash.replace(/^#\/?/, '') || (S.authed ? 'dashboard' : 'login'));
@@ -1399,8 +1476,9 @@ function render() {
 }
 function crumb(p, arg) {
   const m = MENU.find(x => x.id === p);
-  if (p === 'customer') return ['업무', '인증 결과', arg || ''];
-  return [m ? (MENU.slice(0, MENU.indexOf(m)).reverse().find(x => x.sec)?.sec || '') : '업무', m ? m.l : '대시보드'];
+  if (p === 'customer') return ['서비스', '인증결과', arg || ''];
+  if (!m || p === 'dashboard') return ['대시보드'];
+  return [MENU.slice(0, MENU.indexOf(m)).reverse().find(x => x.sec)?.sec || '', m.l].filter(Boolean);
 }
 function Shell(p, body, arg) {
   const nav = MENU.filter(m => m.sec || !m.only || m.only.includes(S.role)).map(m => m.sec ? `<div class="nav-sec">${m.sec}</div>`
@@ -1458,23 +1536,67 @@ function dashChart(series) {
       ${i % every === 0 || p.d === TODAY ? `<text x="${L + i * step + step / 2}" y="${H - 8}" text-anchor="middle">${p.d === TODAY ? '오늘' : p.d.slice(5).replace('-', '/')}</text>` : ''}</g>`; }).join('');
   return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="일별 인증 시도 막대 차트"><g class="grid">${ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/>`).join('')}</g><g class="axis">${ticks.map(t => `<text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}${bars}</g></svg></div>`;
 }
+/* 인증 성공 · 개통 완료 일별 묶음 막대 */
+function dashChart2(series) {
+  const W = 760, H = 330, L = 40, R = 8, T = 12, B = 28, pw = W - L - R, ph = H - T - B;
+  const vmax = Math.max(1, ...series.map(x => Math.max(x.ok, x.open))), st = [2, 5, 10, 20, 25, 50, 100, 200].find(s => vmax / s <= 4) || 500, max = Math.ceil(vmax / st) * st;
+  const step = pw / series.length, bw = Math.min(14, step * .32), y = v => T + ph - v / max * ph;
+  const ticks = Array.from({ length:max / st + 1 }, (_, i) => i * st), every = series.length > 20 ? 5 : series.length > 10 ? 3 : 1;
+  const bar = (x, v, cls) => { const h = Math.max(v ? 2 : 0, v / max * ph), yy = T + ph - h, r = Math.min(3, bw / 2, h / 2); return h ? `<path class="${cls}" d="M${x},${T + ph}V${yy + r}Q${x},${yy} ${x + r},${yy}H${x + bw - r}Q${x + bw},${yy} ${x + bw},${yy + r}V${T + ph}Z"/>` : ''; };
+  const cols = series.map((p, i) => { const cx = L + i * step + step / 2, we = [0, 6].includes(pd(p.d).getDay()), t = p.d === TODAY;
+    return `<g class="col ${t ? 'today' : we ? 'we' : ''}"><rect class="hit" x="${L + i * step}" y="${T}" width="${step}" height="${ph}" data-tip="<b>${p.d}</b>${t ? ' (오늘, 집계 중)' : we ? ' (주말)' : ''}<br>인증 성공 ${fmt(p.ok)}건 · 개통 완료 ${fmt(p.open)}건"/>${bar(cx - bw - 1, p.ok, 'b-ok')}${bar(cx + 1, p.open, 'b-open')}
+      ${i % every === 0 || t ? `<text x="${cx}" y="${H - 8}" text-anchor="middle">${t ? '오늘' : p.d.slice(5).replace('-', '/')}</text>` : ''}</g>`; }).join('');
+  return `<div class="chart chart2"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="일별 인증 성공 · 개통 완료 막대 차트"><g class="grid">${ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/>`).join('')}</g><g class="axis">${ticks.map(t => `<text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}${cols}</g></svg></div>`;
+}
+/* 고객 구성 — 성별 · 연령대 (예시 비율: 조직마다 조금씩 다르게, 미성년은 비자 통계의 미성년 수) */
+function demoOf(key, n, minorShare) {
+  let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) % 997;
+  const male = Math.round(n * (.54 + (h % 9) / 100)), minor = Math.round(n * minorShare);
+  const age = [minor, ...scaleInts([46 + h % 7, 27, 14 + h % 4, 6], n - minor)];
+  return { male, female:n - male, age };
+}
+const AGE_L = ['19세 이하 (미성년)', '20 – 24세', '25 – 29세', '30 – 39세', '40세 이상'];
 function Dashboard() {
-  const s = STATS[S.role === 'sub' ? me().id : scope()], [a, b] = S.range.dash, full = scaleInts(DAILY, s.tries);
-  const series = DAYS.map((d, i) => ({ d, v:full[i] })).filter(x => x.d >= a && x.d <= b);
-  const tries = sum(series.map(x => x.v)), ok = Math.round(s.ok * tries / s.tries), fail = tries - ok, fails = scaleInts(s.fails, fail);
-  const fmax = Math.max(1, ...fails), vt = s.visa[0] + s.visa[1], inS = CUST.filter(canSee);
+  const key = S.role === 'sub' ? me().id : scope(), s = STATS[key], [a, b] = S.range.dash;
+  const tryD = scaleInts(DAILY, s.tries), okD = scaleInts(DAILY, s.ok), done = s.pipe[4];
+  /* 개통은 인증 다음 날 이후 처리되는 경우가 많아 하루 늦게 반영 (오늘은 일부만) */
+  const openD = scaleInts(okD.map((v, i) => i ? (DAYS[i] === TODAY ? okD[i - 1] * .4 : okD[i - 1]) : 0), done);
+  const series = DAYS.map((d, i) => ({ d, t:tryD[i], ok:okD[i], open:openD[i] })).filter(x => x.d >= a && x.d <= b);
+  const tries = sum(series.map(x => x.t)), ok = sum(series.map(x => x.ok)), open = sum(series.map(x => x.open)), fail = tries - ok;
+  const vt = s.visa[0] + s.visa[1], inS = CUST.filter(canSee), noData = !series.length;
   const due = inS.filter(c => !isGone(c) && !['인증 실패'].includes(c.stage) && diffD(TODAY, addD(c.at.slice(0, 10), S.retention)) <= 7).length;
   const late = inS.filter(c => c.stage === '서류 보완' && diffD(c.at.slice(0, 10), TODAY) >= 7).length;
-  const noData = !series.length;
+  
+  const tot = sum(s.pipe);
+  /* 1. 처리 단계별 현황 (5) + 인증 요약 (4) — 작은 카드 9개 */
+  const stages = `<div class="pipe dash-st">${s.pipe.map((v, i) => `<button class="stage" data-act="stage" data-s="${STAGES[i]}" title="누르면 인증결과가 이 단계로 열립니다">${badge(STAGES[i])}<div class="c">${fmt(v)}</div><div class="h">${STAGE_HINT[i]}</div></button>`).join('')}</div>`
+    + `<div class="kpis kpis-sm">${KPI('인증 시도', fmt(tries), '건', `${a} ~ ${b}`, 'scan', 'hero')}${KPI('인증 성공', fmt(ok), '건', `성공률 ${pct(ok, tries)}%`, 'check')}${KPI('인증 실패', fmt(fail), '건', `실패율 ${pct(fail, tries)}%`, 'x')}${KPI('검수 대기', fmt(s.pipe[0]), '건', '현재 기준 · 가장 오래된 건 1일 전', 'clock')}</div>`;
+
+  /* 2. 개통 완료 & 인증 추이 */
+  const trend = Card('개통 완료 & 인증 추이', `<div class="duo">
+      <div class="duo-k"><span><i class="sw sw-ok"></i>인증 성공</span><b class="num">${fmt(ok)}<small>건</small></b><em>시도 ${fmt(tries)}건 · 성공률 ${pct(ok, tries)}% · 실패 ${fmt(fail)}건</em></div>
+      <div class="duo-k"><span><i class="sw sw-open"></i>개통 완료</span><b class="num">${fmt(open)}<small>건</small></b><em>인증 성공 대비 ${pct(open, ok)}% · 차이 ${fmt(Math.abs(ok - open))}건${open > ok ? ' (이전 인증분 개통 포함)' : ''}</em></div></div>
+    ${noData ? `<div class="empty">${ic('cal')}<div>선택한 기간(${a} ~ ${b})에는 시범 운영 데이터가 없습니다.<br><span style="font-size:12px">시범 운영은 ${PILOT}에 시작했습니다.</span></div></div>` : dashChart2(series)}`,
+    { sub:`${a} ~ ${b} · 개통은 다음 날 처리되기도 해 날짜별로 개통이 더 많을 수 있음` });
+
+  /* 3. 고객 구성 현황 */
+  const dm = demoOf(key, ok, s.visa[2] / Math.max(1, vt)), amax = Math.max(1, ...dm.age);
+  const comp = Card('고객 구성 현황', `<div class="cmp">
+      <div class="cmp-s"><h4>성별</h4><div class="gbar" role="img" aria-label="남성 ${pct(dm.male, ok)}% 여성 ${pct(dm.female, ok)}%"><i class="m" style="width:${pct(dm.male, ok)}%"></i><i class="f" style="width:${pct(dm.female, ok)}%"></i></div>
+        <div class="glg"><span><i class="sw sw-m"></i>남성 <b class="num">${fmt(dm.male)}</b>명 · ${pct(dm.male, ok)}%</span><span><i class="sw sw-f"></i>여성 <b class="num">${fmt(dm.female)}</b>명 · ${pct(dm.female, ok)}%</span></div></div>
+      <div class="cmp-s"><h4>연령대</h4>${dm.age.map((v, i) => `<div class="hbar"><span>${AGE_L[i]}</span><span class="trk"><i style="width:${(v * 100 / amax).toFixed(0)}%"></i></span><span class="v">${pct(v, ok)}%</span></div>`).join('')}</div>
+      <div class="cmp-s"><h4>비자</h4>${[['근로자 (E-9 · E-7)', s.visa[0]], ['유학생 (D-2 · D-4)', s.visa[1]]].map(([l, v]) => `<div class="hbar"><span>${l}</span><span class="trk"><i style="width:${(v * 100 / vt).toFixed(0)}%"></i></span><span class="v">${pct(v, vt)}%</span></div>`).join('')}</div></div>
+    <div class="cmp-al"><a class="callout warn" href="#/retention">${ic('clock')}<div>7일 안에 보관기한이 끝나는 고객 <b>${due}</b>명 — 기한이 지나면 자동 삭제됩니다.</div></a><a class="callout warn" href="#/history" data-act="stage" data-s="서류 보완">${ic('file')}<div>서류 보완 7일 경과 <b>${late}</b>명</div></a></div>`,
+    { sub:`기간 내 인증 성공 ${fmt(ok)}명 기준 · 예시 데이터` });
+
+  /* 4. 하위 조직별 현황 — 인증 · 개통 · 성공/실패 */
+  const kr = s.kids.map(k => { const kOk = k[3], kOpen = Math.round(kOk * done / Math.max(1, tot)); return { n:k[0], lv:k[1], t:k[2], ok:kOk, f:k[2] - kOk, open:kOpen, wait:k[4], o:k[5] }; });
+  const orgs = Card(S.role === 'sub' ? '내 처리 현황' : '하위 조직별 현황', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>${S.role === 'sub' ? '계정' : '조직'}</th><th>위계</th><th class="n">처리(시도)</th><th class="n">성공</th><th class="n">실패</th><th class="n">성공률</th><th class="n">개통 완료</th><th class="n">개통률</th><th class="n">검수 대기</th></tr></thead><tbody>
+      ${kr.map(k => `<tr ${allowed('accounts') ? `data-act="go-org" data-o="${k.o}"` : ''}><td class="strong">${esc(k.n)}</td><td>${k.lv}</td><td class="n num">${fmt(k.t)}</td><td class="n num">${fmt(k.ok)}</td><td class="n num" style="color:var(--bad)">${fmt(k.f)}</td><td class="n num">${pct(k.ok, k.t)}%</td><td class="n num">${fmt(k.open)}</td><td class="n num">${pct(k.open, k.ok)}%</td><td class="n num">${k.wait}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td class="strong">합계</td><td></td><td class="n num">${fmt(sum(kr.map(k => k.t)))}</td><td class="n num">${fmt(sum(kr.map(k => k.ok)))}</td><td class="n num">${fmt(sum(kr.map(k => k.f)))}</td><td class="n num">${pct(sum(kr.map(k => k.ok)), sum(kr.map(k => k.t)))}%</td><td class="n num">${fmt(sum(kr.map(k => k.open)))}</td><td class="n num">${pct(sum(kr.map(k => k.open)), sum(kr.map(k => k.ok)))}%</td><td class="n num">${sum(kr.map(k => k.wait))}</td></tr></tfoot></table></div>`, { flush:true, sub:'시범 운영 전체 기준' });
+
   return PH('대시보드', `조회 범위 · <b>${ROLES[S.role].label}</b> — ${ROLES[S.role].range}`, dpBtn('dash', '조회 기간'))
-  + `<div class="kpis">${KPI('인증 시도', fmt(tries), '건', `${a} ~ ${b}`, 'scan', 'hero')}${KPI('인증 성공', fmt(ok), '건', `성공률 ${pct(ok, tries)}%`, 'check')}${KPI('인증 실패', fmt(fail), '건', `중도 이탈 ${fails[4] || 0}건 포함`, 'x')}${KPI('검수 대기', fmt(s.pipe[0]), '건', '현재 기준 · 가장 오래된 건 1일 전', 'clock')}</div>`
-  + `<div class="g2">${Card('일별 인증 추이', noData ? `<div class="empty">${ic('cal')}<div>선택한 기간(${a} ~ ${b})에는 시범 운영 데이터가 없습니다.<br><span style="font-size:12px">시범 운영은 ${PILOT}에 시작했습니다.</span></div></div>` : dashChart(series), { sub:`합계 ${fmt(tries)}건 · 주말은 옅게, 오늘은 집계 중` })}
-    ${Card('실패 사유', fails.map((v, i) => `<div class="hbar"><span>${FAILS[i]}</span><span class="trk"><i style="width:${(v * 100 / fmax).toFixed(0)}%;background:var(--bad)"></i></span><span class="v">${v}</span></div>`).join(''), { sub:`합계 ${fail}건` })}</div>`
-  + Card('처리 단계', `<div class="pipe">${s.pipe.map((v, i) => `<button class="stage" data-act="stage" data-s="${STAGES[i]}">${badge(STAGES[i])}<div class="c">${fmt(v)}</div><div class="h">${STAGE_HINT[i]}</div></button>`).join('')}</div>`, { sub:`현재 기준 · 합계 = 성공 ${fmt(s.ok)}건 · 단계를 누르면 이력이 그 단계로 열립니다`, style:'margin-bottom:16px' })
-  + `<div class="g2">${Card(S.role === 'sub' ? '내 처리 현황' : '하위 조직별 현황', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>${S.role === 'sub' ? '계정' : '조직'}</th><th>위계</th><th class="n">시도</th><th class="n">성공</th><th class="n">성공률</th><th class="n">검수 대기</th></tr></thead><tbody>
-      ${s.kids.map(k => `<tr ${allowed('accounts') ? `data-act="go-org" data-o="${k[5]}"` : ''}><td class="strong">${esc(k[0])}</td><td>${k[1]}</td><td class="n num">${fmt(k[2])}</td><td class="n num">${fmt(k[3])}</td><td class="n num">${pct(k[3], k[2])}%</td><td class="n num">${k[4]}</td></tr>`).join('')}</tbody></table></div>`, { flush:true, sub:'시범 운영 전체 기준' })}
-    ${Card('고객 구성 · 알림', [['근로자 (E-9 · E-7)', s.visa[0]], ['유학생 (D-2 · D-4)', s.visa[1]], ['└ 미성년', s.visa[2]]].map(([l, v]) => `<div class="hbar"><span>${l}</span><span class="trk"><i style="width:${(v * 100 / vt).toFixed(0)}%"></i></span><span class="v">${v}</span></div>`).join('')
-      + `<div style="display:grid;gap:8px;margin-top:14px"><a class="callout warn" href="#/retention">${ic('clock')}<div>7일 안에 보관기한이 끝나는 고객 <b>${due}</b>명 — 기한이 지나면 자동 삭제됩니다.</div></a><a class="callout warn" href="#/history" data-act="stage" data-s="서류 보완">${ic('file')}<div>서류 보완 7일 경과 <b>${late}</b>명</div></a></div>`)}</div>`;
+    + stages + `<div class="g2">${trend}${comp}</div>` + orgs;
 }
 
 /* ---------- 인증 결과 (C1 · C2 통합) ---------- */
@@ -1520,6 +1642,33 @@ function History() {
 /* ---------- C2 고객 상세 ---------- */
 const PH_PASS = '<svg viewBox="0 0 120 84" aria-hidden="true"><rect x="2" y="2" width="116" height="80" rx="6" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/><rect x="10" y="12" width="30" height="38" rx="3" fill="currentColor" opacity=".18"/><g fill="currentColor" opacity=".3"><rect x="48" y="14" width="56" height="5" rx="2"/><rect x="48" y="25" width="40" height="5" rx="2"/><rect x="48" y="36" width="48" height="5" rx="2"/><rect x="10" y="62" width="100" height="4" rx="2"/><rect x="10" y="71" width="100" height="4" rx="2"/></g></svg>';
 const PH_FACE = '<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="30" r="15" fill="currentColor" opacity=".25"/><path d="M12 76c4-16 15-24 28-24s24 8 28 24" fill="currentColor" opacity=".25"/></svg>';
+/* 인증 상세 내역 — SIGNION 단계별 처리 기록 (접기/펼치기, 기본 접힘) */
+function authSteps(c) {
+  const base = c.at.length > 16 ? c.at : c.at + ':00', d0 = new Date(base.replace(' ', 'T'));
+  let sec = 0; const t = n => { sec += n; const d = new Date(d0.getTime() + sec * 1000); return `${ymd(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+  const S2 = [['2000','인증 요청','req'],['2001','인증 요청 완료','ok'],['3001','AI OCR 인식 시작','req'],['3002','AI OCR VIZ · MRZ 무결성 검증','ok'],['3003','AI OCR 인식 완료','ok'],['4001','여권 NFC 칩 판독','ok'],['5001','안면인식 시작','req'],['5002','안면 일치 · 라이브니스 확인','ok'],['9000','KYC 인증 완료','ok']];
+  const gap = [0, 1, 2, 18, 2, 9, 3, 14, 1], out = [];
+  const stopAt = { OCR_008:3, FACE_008:7, LIV_003:7, USR_001:6, NET_001:6 }[c.code];
+  const run = c.stage === '인증 진행 중' ? 3 : S2.length;
+  for (let i = 0; i < Math.min(run, S2.length); i++) {
+    const [code, name, kind] = S2[i];
+    if (stopAt !== undefined && i === stopAt) {
+      const FC = FAIL_CODE[c.code], halt = !FC?.bill;
+      out.push({ code, name, r:halt ? 'stop' : 'fail', at:t(gap[i]), note:FC ? `${FC.t} (${c.code})` : '' });
+      out.push({ code:'9000', name:'KYC 인증 완료', r:'stop', at:t(1), note:halt ? '인증 중단 · 청구 제외' : '인증 실패로 종료' });
+      return out;
+    }
+    out.push({ code, name, r:kind, at:t(gap[i]), note:'' });
+  }
+  return out;
+}
+function authLog(c) {
+  const st = authSteps(c), open = S.alog === c.tx, R = { req:['진행요청','info','clock'], ok:['성공','ok','check'], fail:['실패','bad','x'], stop:['중단','','alert'] };
+  return `<div class="alog ${open ? 'on' : ''}"><button type="button" class="alog-h" data-act="alog" data-tx="${c.tx}" aria-expanded="${open}" aria-controls="alog-${c.tx}">
+      <span class="alog-t">${ic('log')}인증 상세 내역<span class="muted">${c.tx} · ${st.length}단계</span></span><span class="alog-c">${open ? '접기' : '펼치기'}${ic('chev')}</span></button>
+    ${open ? `<div class="tbl-wrap" id="alog-${c.tx}"><table class="tbl alog-tbl"><thead><tr><th class="n">순번</th><th>인증코드</th><th>인증단계명</th><th>진행결과</th><th>처리일시</th><th>비고</th></tr></thead><tbody>
+      ${st.map((x, i) => `<tr><td class="n num">${i + 1}</td><td class="mono">${x.code}</td><td>${esc(x.name)}</td><td><span class="ar ar-${x.r}">${ic(R[x.r][2])}${R[x.r][0]}</span></td><td class="num">${x.at}</td><td class="${x.r === 'fail' || x.r === 'stop' ? 'ar-note' : ''}">${esc(x.note)}</td></tr>`).join('')}</tbody></table></div>` : ''}</div>`;
+}
 function Customer(tx) {
   const c = custBy(tx);
   if (!c || !canSee(c)) return PH('고객을 찾을 수 없습니다', `${esc(tx || '')} — 현재 권한(${ROLES[S.role].label} · ${esc(ROLES[S.role].range)})의 데이터 접근 범위 밖이거나 없는 인증번호입니다.`, `<a class="btn" href="#/history">${ic('shield')}인증 결과</a>`);
@@ -1544,7 +1693,7 @@ function Customer(tx) {
   + `<div class="g2">${Card('인증 결과', `<div class="imgs3" style="margin-bottom:16px"><div><div class="phx">${PH_PASS}</div><div class="phx-cap">여권 이미지</div></div><div><div class="phx">${PH_FACE}</div><div class="phx-cap">여권 얼굴</div></div><div><div class="phx live">${PH_FACE}</div><div class="phx-cap">실시간 얼굴</div></div></div>
       ${f ? failBox(c) : ''}
       <dl class="kv"><dt>성 / 이름</dt><dd>${esc(showName(c).split(' ')[0] || '—')} / ${esc(showName(c).split(' ').slice(1).join(' ') || '—')}</dd><dt>생년월일 · 성별</dt><dd class="num">${um ? c.birth : c.birth.slice(0, 4) + '-••-••'} · ${c.sex}</dd><dt>국적</dt><dd>${c.cc} ${CCN[c.cc]}</dd><dt>여권번호</dt><dd class="mono">${showPass(c)}</dd><dt>발급 · 만료</dt><dd class="num">${c.issueD} · ${c.expD}</dd>
-      <dt>모듈별 결과</dt><dd>${modChips(c)} <span class="muted" style="font-size:12px">안면 일치 기준 80</span></dd><dt>MRZ 이중 확인</dt><dd>사용 안 함 (서버 정책)</dd></dl>`, { sub:'SIGNION 결과 원본 · 수정 불가' })}
+      <dt>모듈별 결과</dt><dd>${modChips(c)} <span class="muted" style="font-size:12px">안면 일치 기준 80</span></dd></dl>${authLog(c)}`, { sub:'SIGNION 결과 원본 · 수정 불가' })}
     ${Card('검수', `${c.reviewed ? `<div class="callout info" style="margin-bottom:12px">${ic('check')}<div>검수 완료 · ${c.acct}</div></div>` : '<p class="ink2" style="margin:0 0 10px;font-size:13px">여권 이미지와 정보를 대조한 뒤 검수 완료를 누르세요.</p>'}
       <div class="fld"><label for="memo">검수 메모</label><textarea class="input" id="memo" style="width:100%" placeholder="예) 이름 철자 원본과 일치">${esc(c.memo)}</textarea></div>
       <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" data-act="memo" data-tx="${c.tx}">메모 저장</button>${f ? '' : `<button class="btn btn-p" data-act="review" data-tx="${c.tx}" ${c.reviewed ? 'disabled' : ''}>${ic('check')}${c.reviewed ? '검수 완료됨' : '검수 완료'}</button>`}</div>
@@ -1586,6 +1735,7 @@ function Start() {
   const pend = [...S.pending.filter(c => c.acct === me().id), ...CUST.filter(c => c.acct === me().id && c.at.startsWith(TODAY)).slice(0, 3)];
   const offs = S.role === 'sub' ? ['vn-hn'] : Object.keys(OFFICE).filter(inScope);
   if (!offs.includes(x.office)) x.office = offs[0];
+  x.method = 'here';   /* 고객 휴대폰 진행은 정책 결정 전까지 비활성 */
   return PH('여권인증', '고객 구분을 입력하고 SIGNION 인증 화면을 엽니다. 결과는 인증 결과 메뉴로 돌아와 고객 상세가 되며, 인증한 관리자가 담당자로 지정됩니다.')
   + `<div class="callout info" style="margin-bottom:16px">${ic('shieldl')}<div>마스터 · 총괄 · 서브 관리자 모두 같은 기능을 씁니다. 결과가 산출된 인증(성공 · 실패)은 건당 인증료 청구 대상이며, 중도 이탈 · 통신 오류처럼 결과가 없는 요청은 제외됩니다.</div></div>`
   + `<div class="g2e">${Card('1. 고객 구분', `<div class="fgrid">${offs.length > 1 ? sel('office', '담당 영업소', offs.map(o => [o, `${OFFICE[o]} 영업소`]), x.office) : ''}${sel('visa', '비자 유형', [['D-2','D-2 유학생'],['D-4','D-4 유학생'],['E-9','E-9 근로자'],['E-7','E-7 근로자']], x.visa)}
@@ -1593,13 +1743,10 @@ function Start() {
       ${sel('cc', '고객 국적', [['VNM','VNM 베트남'],['NPL','NPL 네팔'],['MNG','MNG 몽골']], x.cc)}
       ${sel('lang', '인증 화면 언어', [['vi','Tiếng Việt (vi)'],['en','English (en)'],['ko','한국어 (ko)'],['mn','Монгол (mn)'],['th','ไทย (th)'],['ja','日本語 (ja)'],['cn','简体中文 (cn)'],['tw','繁體中文 (tw)'],['ne','नेपाली — 미지원', true]], x.lang)}</div>
       <div class="sec-t">필수 서류 (자동 결정)</div><div class="chips" style="flex-wrap:wrap">${reqDocs({ visa:x.visa, minor:!x.visa.startsWith('E') && x.minor }).map(d => `<span class="chip">${d}</span>`).join('')}</div>`)}
-    ${Card('2. 진행 방식', `<div style="display:grid;gap:10px"><button class="mopt ${x.method === 'here' ? 'on' : ''}" data-act="method" data-m="here">${ic('phone')}<span><b>이 기기에서 진행</b><span>직원 기기 카메라로 여권과 고객 얼굴을 촬영합니다.</span></span></button>
-      <button class="mopt ${x.method === 'qr' ? 'on' : ''}" data-act="method" data-m="qr">${ic('qr')}<span><b>고객 휴대폰으로 <span class="badge t-warn" style="margin-left:4px">협의</span></b><span>QR을 고객이 찍어 자기 휴대폰으로 진행합니다.</span></span></button>
+    ${Card('2. 진행 방식', `<div style="display:grid;gap:10px"><button class="mopt ${x.method === 'here' ? 'on' : ''}" data-act="method" data-m="here">${ic('phone')}<span><b>이 기기에서 진행</b><span>직원 기기(태블릿) 카메라로 여권과 고객 얼굴을 촬영합니다. 인증 시작을 누르면 <code class="code-i">auth.signion.net</code> 인증 화면으로 이동합니다.</span></span></button>
+      <button class="mopt dis" disabled aria-disabled="true" title="정책 결정 완료 후 활성화 예정">${ic('qr')}<span><b>고객 휴대폰으로 진행 <span class="badge" style="margin-left:4px">준비 중</span></b><span>임시 비활성 — 정책 결정 완료 후 활성화 예정입니다.</span></span></button>
       <button class="btn btn-p btn-block" data-act="start" style="margin-top:4px">${ic('scan')}인증 시작</button></div>`)}</div>`
-  + Card('3. 연동 흐름', `<div class="flow"><div class="fnode"><div class="w">파트너 관리자 서버</div><h4>진입 요청</h4>SIGNION 진입 주소로 form POST<br><code>countryCode=${x.cc}</code> <code>language=${x.lang}</code><br><code>responseEtc=고객번호</code></div>
-      <div class="fnode sg"><div class="w">SIGNION 인증 화면</div><h4>여권 OCR → 안면</h4>여권 촬영 · 확인 · 실시간 얼굴 · 라이브니스</div>
-      <div class="fnode sg"><div class="w">SIGNION 서버</div><h4>결과 전송</h4>결과 수신 주소로 <code>result</code> POST<br>중도 종료 시 FAIL 결과 전송</div>
-      <div class="fnode"><div class="w">파트너 관리자 서버</div><h4>복호화 · 저장</h4>MasterKEY · IVKey (AES-256-CBC)로 복호화<br>고객번호로 고객 레코드에 연결</div></div>`, { sub:'제안 구조 · 연동규격 v1.0.3', style:'margin-bottom:16px' })
+  + Card('3. 인증 흐름', `<ol class="aflow">${[['scan','여권 스캔'],['nfc','여권 NFC'],['face','안면 인식'],['check','여권 인증 완료']].map(([i, l], k) => `<li class="${k === 3 ? 'fin' : ''}"><span class="n">${k + 1}</span>${ic(i)}<b>${l}</b></li>`).join('')}</ol>`, { style:'margin-bottom:16px' })
   + Card('4. 진행 중', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>고객번호</th><th>구분</th><th>국적</th><th>시작</th><th>상태</th></tr></thead><tbody>${pend.map(c => `<tr ${c.stage !== '인증 진행 중' ? `data-act="open-c" data-tx="${c.tx}"` : ''}><td class="mono">${c.tx}</td><td>${c.visa}${c.minor ? ' · 미성년' : ''}</td><td class="mono">${c.cc}</td><td class="num">${c.at.slice(11)}</td><td>${c.stage === '인증 진행 중' ? badge('인증 진행 중') : c.stage === '인증 실패' ? badge(`실패 · ${c.code}`, 'bad') : badge('성공 · 결과 수신', 'ok')}</td></tr>`).join('')}</tbody></table></div>`, { flush:true });
 }
 
@@ -2002,10 +2149,12 @@ document.addEventListener('click', e => {
         c.stage = '개통 완료 · 삭제'; c.name = ''; c.pmask = ''; c.pfull = ''; c.files = {}; c.delAt = `${TODAY} ${nowT().slice(0, 5)}`; delete S.unmask[c.tx]; c.hist.unshift([c.delAt.slice(5), '개통 완료 · 개인정보 즉시 삭제', me().id]); addLog('개통 완료', `${c.tx} · 개인정보 즉시 삭제`); closeModal(); render(); toast(`개통 완료 · 개인정보를 삭제했습니다 (보관 용량 ${mb}MB 차감)`); }); break; }
     /* start */
     case 'method': S.c3.method = a.dataset.m; render(); break;
-    case 'start': { if (S.c3.method === 'qr') { toast('고객 휴대폰 QR 진행은 협의 후 제공됩니다.', true); break; }
+    case 'alog': S.alog = S.alog === a.dataset.tx ? null : a.dataset.tx; render(); break;
+    case 'start': { if (S.c3.method === 'qr') { toast('고객 휴대폰 진행은 정책 결정 후 활성화됩니다.', true); break; }
+      try { window.open('https://auth.signion.net/', '_blank', 'noopener'); } catch (e) {}
       const x = S.c3, n = 419 + S.pending.length, tx = `TX-1103-0${n}`;
       const c = { tx, name:pick(POOL[x.cc]), cc:x.cc, visa:x.visa, minor:!x.visa.startsWith('E') && x.minor, office:x.office, at:`${TODAY} ${nowT().slice(0, 5)}`, ocr:1, score:null, liv:null, reviewed:false, stage:'인증 진행 중', acct:me().id, pmask:'', pfull:'', code:'', delAt:'', files:{}, memo:'', hist:[[`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '여권인증 시작 · 고객번호 발급', me().id]], birth:'2008-05-14', sex:'F', issueD:'2023-02-10', expD:'2033-02-10' };
-      S.pending.unshift(c); addLog('여권인증 시작', tx); render(); toast(`고객번호 ${tx} 발급 · SIGNION 인증 화면을 엽니다 (예시)`);
+      S.pending.unshift(c); addLog('여권인증 시작', tx); render(); toast(`고객번호 ${tx} 발급 · auth.signion.net 인증 화면으로 이동합니다`);
       setTimeout(() => { S.pending.splice(S.pending.indexOf(c), 1); Object.assign(c, { score:+(88 + Math.random() * 8).toFixed(1), liv:1, stage:'검수 대기', pmask:`${PFX[c.cc]}${ri(10, 99)}••••${ri(10, 99)}` }); c.pfull = c.pmask.replace('••••', '5521'); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, 'SIGNION 결과 수신 · 성공', 'system']); CUST.unshift(c); const ag = agOf(c.office); AUTHN[ag][CUR_M] = (AUTHN[ag][CUR_M] || 0) + 1; addLog('여권인증 결과 수신', `${tx} · 성공 · 인증료 청구 대상 1건`); if (['start','history'].includes(route().split('/')[0])) render(); toast(`${tx} 결과 수신 · 성공 → 검수 대기`); }, 4000);
       break; }
     /* issue */
