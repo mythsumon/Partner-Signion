@@ -556,6 +556,13 @@ button.gsearch span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:elli
 @media(max-width:1100px){.ct-svc{grid-template-columns:1fr 1fr}.ct-plans{grid-template-columns:1fr}}
 @media(max-width:640px){.ct-svc{grid-template-columns:1fr}}
 
+/* 조직 등록 */
+.org-add{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:0;border:0;background:none;color:var(--brand);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.org-add .i{width:14px;height:14px}
+.org-add:hover{text-decoration:underline}
+.org-code{display:flex;align-items:center;gap:8px}
+.org-code .input{flex:1}
+
 /* ---------- Datepicker ---------- */
 .dp{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
 .dp:hover{border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}
@@ -778,6 +785,9 @@ button.gsearch span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:elli
 .csel-o.on.act{background:var(--brand-50)}
 .csel-o.dis{color:var(--muted);cursor:not-allowed;background:none}
 .csel-sep{height:1px;background:var(--line-2);margin:4px 6px}
+.csel-o.add{color:var(--brand);font-weight:600}
+.csel-o.add svg{visibility:visible;stroke:var(--brand)}
+.csel-o.add.act{background:var(--brand-50)}
 
 /* ---------- Responsive ---------- */
 @media (max-width:1200px){.g2,.g2e{grid-template-columns:1fr}.bi-hero{grid-template-columns:1fr}.bi-hero .lg{border-right:0;border-bottom:1px solid var(--line-2)}}
@@ -1274,6 +1284,9 @@ const RAW = [
  ['TX-1006-0091','HOANG VAN SON','VNM','D-4',0,'vn-hn','10-06 16:52',[1,90.2,1],1,2,'서류 보완','vn-hn-02','C33••••71'],
 ];
 const POOL = { VNM:['NGUYEN VAN AN','TRAN MINH TUAN','LE THI HONG','PHAM VAN HUNG','HOANG THI LINH','VU DUC ANH','DANG THI THAO','BUI VAN NAM','NGO THI YEN'], NPL:['RAM KARKI','SUNITA TAMANG','BINOD POUDEL','ASHA MAGAR'], MNG:['TEMUULEN BOLD','ANUJIN ERDENE','GANZORIG BAT'] };
+/* 총괄 사무소 국가 (영업소 국적 기본값) */
+const GEN_CC = { vn:'VNM', np:'NPL', mn:'MNG' };
+const CC_ADD = { KHM:'캄보디아', PHL:'필리핀', IDN:'인도네시아', UZB:'우즈베키스탄', THA:'태국', MMR:'미얀마', LKA:'스리랑카', BGD:'방글라데시' };
 const OFF_CC = { 'vn-hn':'VNM','vn-hcm':'VNM','vn-dn':'VNM','np-ktm':'NPL','np-pkr':'NPL','mn-ub':'MNG' };
 const PFX = { VNM:'C', NPL:'PA', MNG:'E' };
 (() => { const used = new Set(RAW.map(r => r[0]));
@@ -1570,7 +1583,7 @@ const allowed = id => { const m = MENU.find(x => x.id === id); return (!m || !m.
 const ACT_PERM = { xls:['history','x'], 'xls-raw':['history','x'], 'form-dl':['history','x'], dl:['history','x'], issue:['history','x'],
   review:['history','e'], 'review-sel':['history','e'], memo:['history','e'], up:['history','e'], reup:['history','e'], 'form-up':['history','e'], done:['history','e'], mv:['history','e'], tok:['history','e'], rm:['history','d'],
   start:['start','c'], 'xl-dash':['dashboard','x'], 'xl-usage':['usage','x'], 'stmt-dl':['settle','x'], 'stmt-print':['settle','x'],
-  'xl-acc':['accounts','x'], 'acc-new':['accounts','c'], 'acc-edit':['accounts','e'], 'acc-stop':['accounts','e'], unlock:['accounts','e'], 'acc-use':['accounts','e'], 'acc-del':['accounts','d'],
+  'xl-acc':['accounts','x'], 'acc-new':['accounts','c'], 'org-new':['accounts','c'], 'acc-edit':['accounts','e'], 'acc-stop':['accounts','e'], unlock:['accounts','e'], 'acc-use':['accounts','e'], 'acc-del':['accounts','d'],
   'xl-ret':['retention','x'], ret:['retention','e'], 'ret-save':['retention','e'], 'xl-logs':['logs','x'] };
 function permTable(lv, perm) {
   const ms = lvMenus(lv), cap = S.role === 'head' ? null : permOf(me().id);
@@ -1603,7 +1616,7 @@ function render() {
 }
 /* KT 헤드마스터 = 조회 전용 — 고객 · 서류 · 검수 · 발급 · 개통 등 수정 기능 없음 (조회 · 마스킹 해제 · 다운로드는 가능, 사용 로그 기록)
    서버에서도 KT 계정의 수정 요청을 거부해야 함 */
-const KT_RO = new Set(['review-sel','hck','hck-all','memo','review','up','reup','rm','mv','tok','issue','form-up','done','ret','ret-save','pack-open','acc-new','acc-edit','acc-stop','acc-del','acc-use','unlock']);
+const KT_RO = new Set(['org-new','org-lv','review-sel','hck','hck-all','memo','review','up','reup','rm','mv','tok','issue','form-up','done','ret','ret-save','pack-open','acc-new','acc-edit','acc-stop','acc-del','acc-use','unlock']);
 const isRO = () => S.role === 'head';
 function roPaint(p) {
   if (!isRO()) return;
@@ -2012,6 +2025,48 @@ function stmtPrint() {
   addLog('거래명세서 인쇄', `${A.name} · ${M}`); return w;
 }
 /* ---------- E1 계정 관리 ---------- */
+/* 조직 등록 — 마스터: 총괄 사무소 · 영업 사무소 / 총괄: 소속 영업 사무소 / 서브 · 직원: 없음 / KT: 조회 전용
+   새 조직은 ORG 트리 · PARENT · (영업소면) OFFICE · OFF_CC 에 함께 추가해 여권인증 · 인증결과 · 계정 등록에서 바로 쓰임 */
+const ORG_CAN = { head:[], master:['general','sub'], general:['sub'], sub:[] };
+const ORG_T = { general:'총괄 사무소', sub:'영업 사무소' };
+const orgParents = lv => { const base = findOrg(ORG, scope()); if (!base) return []; if (lv === 'general') return base.lv === 'master' ? [base] : []; const out = []; (function walk(n) { if (n.lv === 'general') out.push(n); (n.c || []).forEach(walk); })(base); return out; };
+const orgCode = (lv, par, cc) => { const used = id => !!findOrg(ORG, id); let base = lv === 'general' ? (cc || 'g').slice(0, 2).toLowerCase() : `${par}-o`, id = base, k = 1; if (lv === 'sub') id = base + k; while (used(id)) id = base + (++k); return id; };
+function openOrg(lv, ret, keep = {}) {
+  const can = ORG_CAN[S.role] || []; if (!can.length) { toast('조직 등록 권한이 없습니다.', true); return; } lv = can.includes(lv) ? lv : can[0];
+  const pars = orgParents(lv), sel = S.tree && pars.some(x => x.id === S.tree) ? S.tree : (pars.some(x => x.id === PARENT[S.tree]) ? PARENT[S.tree] : pars[0]?.id);
+  const par = pars.some(x => x.id === keep.par) ? keep.par : sel, cc = keep.cc || 'VNM', accLv = lv === 'general' ? 'general' : 'sub', canAcc = (CAN_ADD[S.role] || []).includes(accLv);
+  const ccOpts = { ...CCN, ...CC_ADD };
+  openModal(MH('조직 등록', '총괄 사무소 · 영업 사무소를 만들고 관리자 계정을 연결합니다. 등록 내역은 사용 로그에 남습니다.') + `<div class="m-b">
+    <div class="fld" style="margin-bottom:14px"><label>조직 유형<span class="req">*</span></label><div class="atype" style="grid-template-columns:1fr 1fr">${['general','sub'].map(k => { const ok = can.includes(k);
+      return `<button type="button" class="${k === lv ? 'on' : ''}" ${ok ? `data-act="org-lv" data-lv="${k}"` : 'disabled'} aria-pressed="${k === lv}">${tierB(k)}<b>${ORG_T[k]}</b><small>${ok ? (k === 'general' ? '대리점 본사 아래 · 총괄 관리자가 관리' : '총괄 사무소 아래 · 서브 관리자가 관리') : '마스터 관리자만 등록'}</small></button>`; }).join('')}</div></div>
+    <div class="fgrid">
+      <div class="fld full"><label for="oPar">상위 조직<span class="req">*</span></label><select class="select" id="oPar" style="width:100%" ${pars.length < 2 ? 'disabled' : ''}>${pars.map(o => `<option value="${o.id}" ${o.id === par ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}</select></div>
+      <div class="fld ${lv === 'general' ? '' : 'full'}"><label for="oName">조직명<span class="req">*</span></label><input class="input" id="oName" value="${esc(keep.name || '')}" placeholder="${lv === 'general' ? '예) 캄보디아 총괄 사무소' : '예) 하이퐁 영업소'}" style="width:100%"></div>
+      ${lv === 'general' ? `<div class="fld"><label for="oCc">국가<span class="req">*</span></label><select class="select" id="oCc" style="width:100%">${Object.entries(ccOpts).map(([k, v]) => `<option value="${k}" ${k === cc ? 'selected' : ''}>${v} (${k})</option>`).join('')}</select></div>` : ''}
+      <div class="fld full"><label for="oCode">조직 코드</label><div class="org-code"><input class="input mono" id="oCode" value="${esc(keep.code || orgCode(lv, par, cc))}" style="width:100%"></div><div class="scope-t">영문 소문자 · 숫자 · - (자동 생성, 바꿀 수 있음)</div></div>
+      ${canAcc && !ret ? `<div class="fld full"><label class="switch"><input type="checkbox" id="oAcc" checked>등록 후 이 조직의 ${LV[accLv]} 관리자 계정 만들기</label></div>` : ''}
+    </div></div>` + okBtns(ret ? '등록하고 계정 등록으로' : '등록'), () => {
+    const v = { lv, par:$('#oPar').value, name:$('#oName').value.trim(), cc:$('#oCc')?.value, code:$('#oCode').value.trim().toLowerCase() };
+    if (!v.name) { toast('조직명을 입력하세요.', true); $('#oName').focus(); return; }
+    if (!/^[a-z0-9][a-z0-9-]{1,}$/.test(v.code)) { toast('조직 코드는 영문 소문자 · 숫자 · - 2자 이상입니다.', true); return; }
+    if (findOrg(ORG, v.code)) { toast('이미 있는 조직 코드입니다.', true); return; }
+    const P = findOrg(ORG, v.par); if (!P) return;
+    const node = { id:v.code, name:v.name, lv, by:me().id, at:`${TODAY} ${nowT()}` }; if (lv === 'general') node.c = [];
+    (P.c = P.c || []).push(node); PARENT[v.code] = v.par;
+    if (lv === 'general') { GEN_CC[v.code] = v.cc; if (!CCN[v.cc]) CCN[v.cc] = CC_ADD[v.cc]; }
+    else { OFFICE[v.code] = v.name.replace(/\s*(영업\s?사무소|영업소|사무소)$/, '') || v.name; OFF_CC[v.code] = GEN_CC[v.par] || 'VNM'; }
+    addLog('조직 등록', `${ORG_T[lv]} · ${v.name} (${v.code}) · 상위 ${P.name}`);
+    const goAcc = ret || $('#oAcc')?.checked;
+    S.tree = v.code; closeModal();
+    if (ret) { accNew(ret.lv, { ...ret.keep, org:v.code }); toast(`${v.name}을(를) 등록했습니다 · 소속으로 선택됨`); return; }
+    if (location.hash !== '#/accounts') location.hash = '#/accounts'; else render();
+    if (goAcc) setTimeout(() => accNew(accLv, { org:v.code }), 60);
+    toast(`${v.name}을(를) 등록했습니다.`);
+  });
+  MD.org = { lv, ret, keep:() => ({ par:$('#oPar')?.value, name:$('#oName')?.value, cc:$('#oCc')?.value }) };
+  $('#oPar')?.addEventListener('change', () => { if (lv === 'sub') $('#oCode').value = orgCode('sub', $('#oPar').value); });
+  $('#oCc')?.addEventListener('change', () => { $('#oCode').value = orgCode('general', null, $('#oCc').value); });
+}
 function findOrg(n, id) { if (n.id === id) return n; for (const k of n.c || []) { const f = findOrg(k, id); if (f) return f; } return null; }
 function Accounts() {
   const sc = scope(), sel = S.tree || sc, next = CAN_ADD[S.role][0] || null, isS = S.role === 'sub';
@@ -2037,7 +2092,7 @@ function Accounts() {
   return PH('계정 관리', '',
     xlBtn('xl-acc') + (next ? `<button class="btn btn-p" data-act="acc-new">${ic('plus')}계정 등록</button>` : ''))
   + policy + quota
-  + `<div class="grid-e1">${Card('조직', `<ul class="tree">${draw(rootN)}</ul>`)}
+  + `<div class="grid-e1">${Card('조직', `<ul class="tree">${draw(rootN)}</ul>`, { r:(ORG_CAN[S.role] || []).length ? `<button class="btn btn-sm" data-act="org-new">${ic('plus')}조직 등록</button>` : '' })}
     ${Card('관리자 · 직원 계정', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>아이디</th><th>이름</th><th>위계</th><th>소속</th><th>인증 메일</th><th>구분 · 당월 과금</th><th>상태</th><th>최근 로그인</th><th class="n">담당 고객</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="10"><div class="empty">${ic('users')}<div>이 조직 아래 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:`${list.length}개 · ${esc(findOrg(ORG, sel)?.name || '')}` })}</div>`;
 }
 /* 계정 생성 모달 — 마스터: 총괄 · 서브 / 헤드마스터: 마스터. 유료 추가 계정이면 과금 안내 팝업 확인 후 생성 */
@@ -2049,18 +2104,20 @@ function accNew(lv, keep = {}) {
   const lvs = CAN_ADD[S.role]; if (!lvs.length) { toast('계정 등록 권한이 없습니다.', true); return; } lv = lvs.includes(lv) ? lv : lvs[0];
   const base = findOrg(ORG, scope()), orgs = []; if (lv === 'staff') orgs.push(base); else (function walk(n) { if (n.lv === lv) orgs.push(n); (n.c || []).forEach(walk); })(base);
   const myMail = ACCTS.find(x => x.id === me().id)?.mail || me().mail, pw0 = keep.pw || ('Sg' + Math.random().toString(36).slice(2, 8) + '!' + ri(10, 99));
+  const canOrg = (ORG_CAN[S.role] || []).includes(lv);
   const org0 = orgs.some(o => o.id === keep.org) ? keep.org : orgs[0]?.id, ag = S.role === 'head' ? null : myAg(), A = ag && AG[ag], g = lv === 'sub' && org0 ? genOf(org0) : null;
   const n = ag && lv !== 'staff' ? acctN(ag, lv, g) : 0, b = ag && lv !== 'staff' ? basicN(ag, lv, g) : 0, paid = !!A && lv !== 'staff' && willPay(lv, org0), scopeT = g ? `${esc(findOrg(ORG, g)?.name || '')} ` : '';
   openModal(MH('계정 등록', '계정 유형과 소속을 고르고 아이디 · 초기 비밀번호를 발급합니다. 첫 로그인 인증번호는 발급 관리자(나)의 메일로 갑니다.') + `<div class="m-b">
     <div class="fld" style="margin-bottom:14px"><label>계정 유형<span class="req">*</span></label><div class="atype">${ATYPES.map(([k, t, d]) => { const ok = lvs.includes(k);
       return `<button type="button" class="${k === lv ? 'on' : ''}" ${ok ? `data-act="acc-lv" data-lv="${k}"` : 'disabled'} aria-pressed="${k === lv}">${tierB(k)}<b>${t}</b><small>${ok ? d : ATYPE_WHO[k]}</small></button>`; }).join('')}</div></div>
     ${A && lv !== 'staff' ? `<div class="callout ${paid ? 'warn' : 'info'}" style="margin-bottom:14px">${ic(paid ? 'coins' : 'check')}<div>${scopeT}${LV[lv]} 기본 제공 ${b}개 중 ${Math.min(n, b)}개 사용 중 — ${paid ? `이 계정은 <b>유료 추가 계정</b>입니다 (월 ${won(A.extra[lv])}, 실제 이용한 달만 과금).` : '기본 제공 수량 안에서 생성됩니다 (추가 비용 없음).'}</div></div>` : ''}
-    <div class="fgrid"><div class="fld full"><label for="iOrg">소속<span class="req">*</span>${lv === 'staff' ? ' <span class="muted" style="font-weight:400">— 내 조직에 자동 연결</span>' : ''}</label><select class="select" id="iOrg" style="width:100%" ${lv === 'staff' ? 'disabled' : ''}>${orgs.map(o => `<option value="${o.id}" ${keep.org === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}</select><div class="scope-t">관리 범위 · ${ATYPE_SCOPE[lv]}</div></div>
+    <div class="fgrid"><div class="fld full"><label for="iOrg">소속<span class="req">*</span>${lv === 'staff' ? ' <span class="muted" style="font-weight:400">— 내 조직에 자동 연결</span>' : ''}</label><select class="select" id="iOrg" style="width:100%" ${lv === 'staff' || (!orgs.length && !canOrg) ? 'disabled' : ''}>${orgs.length ? '' : `<option value="" disabled selected>등록된 ${ORG_T[lv] || '조직'}가 없습니다</option>`}${orgs.map(o => `<option value="${o.id}" ${keep.org === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}${canOrg ? `<option value="__new" data-add="1">새 ${ORG_T[lv]} 등록</option>` : ''}</select><div class="scope-t">관리 범위 · ${ATYPE_SCOPE[lv]}</div></div>
     <div class="fld"><label for="iName">이름<span class="req">*</span></label><input class="input" id="iName" value="${esc(keep.name || '')}" style="width:100%"></div><div class="fld"><label for="iId">아이디<span class="req">*</span></label><input class="input mono" id="iId" value="${esc(keep.id || '')}" style="width:100%"></div>
     <div class="fld full"><label for="iPw">초기 비밀번호</label><div class="pw-row"><input class="input mono" id="iPw" value="${esc(pw0)}" readonly><button type="button" class="btn" data-act="pw-copy">${ic('copy')}복사</button></div></div>
     <div class="fld full"><label>첫 로그인 인증번호 받는 메일</label><div class="ink2" style="font-size:13.5px;padding:6px 0">${esc(myMail)} <span class="muted">(발급 관리자 · ${esc(me().id)})</span></div></div>
     ${permTable(lv, keep.perm || permDef(lv))}</div></div>` + okBtns(paid ? '다음' : '등록'), () => {
     const v = { org:$('#iOrg').value, name:$('#iName').value.trim(), id:$('#iId').value.trim(), pw:$('#iPw').value, perm:readPerm() };
+    if (!v.org || v.org === '__new') { toast(`소속 ${ORG_T[lv] || '조직'}를 고르거나 새로 등록하세요.`, true); return; }
     if (!v.name || !/^[a-z0-9][a-z0-9-]{3,}$/i.test(v.id)) { toast('이름과 아이디(영문 · 숫자 · - 4자 이상)를 확인하세요.', true); return; } if (ACCTS.some(x => x.id === v.id)) { toast('이미 있는 아이디입니다.', true); return; }
     const create = consent => { ACCTS.push({ id:v.id, name:v.name, lv, org:v.org, orgName:findOrg(ORG, v.org)?.name || '', status:'정상', last:'—', cust:0, mail:myMail, pend:'최초 인증 대기', by:me().id, paid, consent, perm:v.perm });
       addLog('계정 발급', `${v.id} (${LV[lv]}${paid ? ' · 유료 추가' : ''} · 권한 ${permSum(v.perm)})${consent ? ` · 과금 안내 확인 ${consent.at} ${consent.by}` : ''}`); closeModal(); render(); toast(`${v.id} 계정을 등록했습니다 · 아이디와 초기 비밀번호를 전달하세요`); };
@@ -2072,6 +2129,7 @@ function accNew(lv, keep = {}) {
     MD.back = () => accNew(lv, v);
   });
   $('#modal').classList.add('wide');
+  $('#iOrg')?.addEventListener('csel-add', () => openOrg(lv, { lv, keep:MD.keep() }));
   MD.keep = () => ({ org:$('#iOrg')?.value, name:$('#iName')?.value, id:$('#iId')?.value, pw:$('#iPw')?.value, perm:readPerm() });
   /* 서브는 총괄 사무소별로 기본 수량이 달라 소속을 바꾸면 안내를 다시 계산 */
   if (lv === 'sub' && A) $('#iOrg')?.addEventListener('change', () => accNew(lv, MD.keep()));
@@ -2484,6 +2542,8 @@ document.addEventListener('click', e => {
     /* accounts */
     case 'tree': S.tree = a.dataset.o; render(); break;
     case 'acc-new': accNew(); break;
+    case 'org-new': { const from = a.dataset.from === 'acc', ret = from ? { lv:$('.atype .on')?.dataset.lv || a.dataset.lv, keep:MD?.keep?.() || {} } : null; openOrg(a.dataset.lv, ret); break; }
+    case 'org-lv': { const o = MD?.org; openOrg(a.dataset.lv, o?.ret, o ? { name:o.keep().name, cc:o.keep().cc } : {}); break; }
     case 'acc-lv': accNew(a.dataset.lv, { ...(MD?.keep?.() || {}), perm:null }); break;
     case 'pw-copy': { const v = $('#iPw').value, done = () => { a.innerHTML = ic('check') + '복사됨'; setTimeout(() => { if (a.isConnected) a.innerHTML = ic('copy') + '복사'; }, 1500); toast('초기 비밀번호를 복사했습니다.'); };
       const fb = () => { const i = $('#iPw'); i.select(); try { document.execCommand('copy'); } catch (x) {} done(); };
@@ -2599,6 +2659,7 @@ window.addEventListener('hashchange', render);
   function paint() {
     const { sel, act } = cur; let h = '';
     [...sel.options].forEach((o, i) => {
+      if (o.dataset.add) { h += `<div class="csel-sep" role="separator"></div><div class="csel-o add ${i === act ? 'act' : ''}" role="option" id="csel-o${i}" data-i="${i}" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>${escH(o.textContent)}</span></div>`; return; }
       h += `<div class="csel-o ${o.disabled ? 'dis' : ''} ${i === sel.selectedIndex ? 'on' : ''} ${i === act ? 'act' : ''}" role="option" id="csel-o${i}" data-i="${i}" aria-selected="${i === sel.selectedIndex}" ${o.disabled ? 'aria-disabled="true"' : ''}>${CHECK}<span>${escH(o.textContent)}</span></div>`;
       if (i === 0 && o.value === '' && sel.options.length > 2) h += '<div class="csel-sep" role="separator"></div>';
     });
@@ -2617,6 +2678,7 @@ window.addEventListener('hashchange', render);
   function choose(i) {
     const { sel, b } = cur, o = sel.options[i]; if (!o || o.disabled) return;
     close(true);
+    if (o.dataset.add) { sel.dispatchEvent(new CustomEvent('csel-add', { bubbles:true })); return; }
     if (i !== sel.selectedIndex) { sel.selectedIndex = i; sync(sel, b); sel.dispatchEvent(new Event('change', { bubbles:true })); }
   }
   function move(d) { const n = cur.sel.options.length; let i = cur.act; for (let k = 0; k < n; k++) { i = (i + d + n) % n; if (!cur.sel.options[i].disabled) break; } cur.act = i; paint(); }
