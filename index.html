@@ -1155,6 +1155,9 @@ const DOC_MINOR = ['법정대리인 동의서','법정대리인 신분증','가�
 const MAXF = 10;                                  /* 기능 구성 시트: 서류 옵션별 최대 10개 */
 const reqDocs = c => [...(c.visa.startsWith('E') ? DOC_WORK : DOC_STUDY), ...(c.minor ? DOC_MINOR : [])];
 const docCount = c => reqDocs(c).filter(d => (c.files[d] || []).length).length;
+/* 처리 이력 = 여권 인증 시작 → 여권 인증 완료 → 검수 완료 → 서류 업로드 완료 → PDF 발급 완료 → 개통 완료
+   파일 하나하나는 서류 칸에만 보이고, 필수 서류가 모두 올라간 순간 한 번만 「서류 업로드 완료」 */
+const docsDone = c => { if (docCount(c) >= reqDocs(c).length && !c.hist.some(h => h[1] === '서류 업로드 완료')) c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '서류 업로드 완료', me().id]); };
 
 /* 고객 레코드 — 기획서 예시 15건 + 기간 조회용 예시 */
 const RAW = [
@@ -1203,12 +1206,12 @@ const CUST = RAW.map(r => {
   const order = [...reqDocs(c)].sort((a, b) => (a === '법정대리인 신분증') - (b === '법정대리인 신분증'));
   if (c.stage !== '개통 완료 · 삭제') order.slice(0, r[9]).forEach(d => c.files[d] = [d === '통신개통신청서' && c.tx === 'TX-1103-0418' ? 3 : 1].flatMap(n => Array.from({ length:n }, (_, i) => `${d.replace(/\s*\(.*\)/, '').replace(/\s/g, '')}${n > 1 ? '_' + (i + 1) : ''}.pdf`)));
   const t0 = c.at.slice(5);
-  c.hist.push([t0.slice(0, 9) + pad(Math.max(0, +t0.slice(9) - 6)), '여권인증 시작 · 고객번호 발급', c.acct]);
-  c.hist.unshift([t0, c.stage === '인증 실패' ? `SIGNION 결과 수신 · 실패 (${c.code})` : 'SIGNION 결과 수신 · 성공', 'system']);
+  c.hist.push([t0.slice(0, 9) + pad(Math.max(0, +t0.slice(9) - 6)), '여권 인증 시작', c.acct]);
+  c.hist.unshift([t0, c.stage === '인증 실패' ? `여권 인증 실패 (${c.code})` : '여권 인증 완료', 'system']);
   if (c.reviewed) c.hist.unshift([t0, '검수 완료', c.acct]);
-  if (r[9]) c.hist.unshift([t0, `필수 서류 ${r[9]}종 업로드`, c.acct]);
-  if (['개통 대기','개통 완료 · 삭제'].includes(c.stage)) c.hist.unshift([t0, 'KT 제출 서류 PDF 발급', c.acct]);
-  if (c.delAt) c.hist.unshift([c.delAt.slice(5), '개통 완료 · 개인정보 즉시 삭제', c.acct]);
+  if (docCount(c) >= reqDocs(c).length || ['발급 대기','개통 대기','개통 완료 · 삭제'].includes(c.stage)) c.hist.unshift([t0, '서류 업로드 완료', c.acct]);
+  if (['개통 대기','개통 완료 · 삭제'].includes(c.stage)) c.hist.unshift([t0, 'PDF 발급 완료', c.acct]);
+  if (c.delAt) c.hist.unshift([c.delAt.slice(5), '개통 완료', c.acct]);
   return c;
 }).sort((a, b) => b.at.localeCompare(a.at));
 
@@ -1591,7 +1594,7 @@ function Dashboard() {
       <div class="duo-k"><span><i class="sw sw-ok"></i>인증 성공</span><b class="num">${fmt(ok)}<small>건</small></b><em>시도 ${fmt(tries)}건 · 성공률 ${pct(ok, tries)}% · 실패 ${fmt(fail)}건</em></div>
       <div class="duo-k"><span><i class="sw sw-open"></i>개통 완료</span><b class="num">${fmt(open)}<small>건</small></b><em>인증 성공 대비 ${pct(open, ok)}% · 차이 ${fmt(Math.abs(ok - open))}건${open > ok ? ' (이전 인증분 개통 포함)' : ''}</em></div></div>
     ${noData ? `<div class="empty">${ic('cal')}<div>선택한 기간(${a} ~ ${b})에는 시범 운영 데이터가 없습니다.<br><span style="font-size:12px">시범 운영은 ${PILOT}에 시작했습니다.</span></div></div>` : dashChart2(series)}`,
-    { sub:`${a} ~ ${b} · 개통은 다음 날 처리되기도 해 날짜별로 개통이 더 많을 수 있음` });
+    { sub:`${a} ~ ${b}` });
 
   /* 3. 고객 구성 현황 */
   const dm = demoOf(key, ok, s.visa[2] / Math.max(1, vt)), amax = Math.max(1, ...dm.age);
@@ -1601,13 +1604,13 @@ function Dashboard() {
       <div class="cmp-s"><h4>연령대</h4>${dm.age.map((v, i) => `<div class="hbar"><span>${AGE_L[i]}</span><span class="trk"><i style="width:${(v * 100 / amax).toFixed(0)}%"></i></span><span class="v">${pct(v, ok)}%</span></div>`).join('')}</div>
       <div class="cmp-s"><h4>비자</h4>${[['근로자 (E-9 · E-7)', s.visa[0]], ['유학생 (D-2 · D-4)', s.visa[1]]].map(([l, v]) => `<div class="hbar"><span>${l}</span><span class="trk"><i style="width:${(v * 100 / vt).toFixed(0)}%"></i></span><span class="v">${pct(v, vt)}%</span></div>`).join('')}</div></div>
     <div class="cmp-al"><a class="callout warn" href="#/retention">${ic('clock')}<div>7일 안에 보관기한이 끝나는 고객 <b>${due}</b>명 — 기한이 지나면 자동 삭제됩니다.</div></a><a class="callout warn" href="#/history" data-act="stage" data-s="서류 보완">${ic('file')}<div>서류 보완 7일 경과 <b>${late}</b>명</div></a></div>`,
-    { sub:`기간 내 인증 성공 ${fmt(ok)}명 기준 · 예시 데이터` });
+    { sub:`인증 성공 ${fmt(ok)}명 기준` });
 
   /* 4. 하위 조직별 현황 — 인증 · 개통 · 성공/실패 */
   const kr = s.kids.map(k => { const kOk = k[3], kOpen = Math.round(kOk * done / Math.max(1, tot)); return { n:k[0], lv:k[1], t:k[2], ok:kOk, f:k[2] - kOk, open:kOpen, wait:k[4], o:k[5] }; });
   const orgs = Card(S.role === 'sub' ? '내 처리 현황' : '하위 조직별 현황', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>${S.role === 'sub' ? '계정' : '조직'}</th><th>위계</th><th class="n">처리(시도)</th><th class="n">성공</th><th class="n">실패</th><th class="n">성공률</th><th class="n">개통 완료</th><th class="n">개통률</th><th class="n">검수 대기</th></tr></thead><tbody>
       ${kr.map(k => `<tr ${allowed('accounts') ? `data-act="go-org" data-o="${k.o}"` : ''}><td class="strong">${esc(k.n)}</td><td>${k.lv}</td><td class="n num">${fmt(k.t)}</td><td class="n num">${fmt(k.ok)}</td><td class="n num" style="color:var(--bad)">${fmt(k.f)}</td><td class="n num">${pct(k.ok, k.t)}%</td><td class="n num">${fmt(k.open)}</td><td class="n num">${pct(k.open, k.ok)}%</td><td class="n num">${k.wait}</td></tr>`).join('')}</tbody>
-      <tfoot><tr><td class="strong">합계</td><td></td><td class="n num">${fmt(sum(kr.map(k => k.t)))}</td><td class="n num">${fmt(sum(kr.map(k => k.ok)))}</td><td class="n num">${fmt(sum(kr.map(k => k.f)))}</td><td class="n num">${pct(sum(kr.map(k => k.ok)), sum(kr.map(k => k.t)))}%</td><td class="n num">${fmt(sum(kr.map(k => k.open)))}</td><td class="n num">${pct(sum(kr.map(k => k.open)), sum(kr.map(k => k.ok)))}%</td><td class="n num">${sum(kr.map(k => k.wait))}</td></tr></tfoot></table></div>`, { flush:true, sub:'시범 운영 전체 기준' });
+      <tfoot><tr><td class="strong">합계</td><td></td><td class="n num">${fmt(sum(kr.map(k => k.t)))}</td><td class="n num">${fmt(sum(kr.map(k => k.ok)))}</td><td class="n num">${fmt(sum(kr.map(k => k.f)))}</td><td class="n num">${pct(sum(kr.map(k => k.ok)), sum(kr.map(k => k.t)))}%</td><td class="n num">${fmt(sum(kr.map(k => k.open)))}</td><td class="n num">${pct(sum(kr.map(k => k.open)), sum(kr.map(k => k.ok)))}%</td><td class="n num">${sum(kr.map(k => k.wait))}</td></tr></tfoot></table></div>`, { flush:true });
 
   return PH('대시보드', `조회 범위 · <b>${ROLES[S.role].label}</b> — ${ROLES[S.role].range}`, dpBtn('dash', '조회 기간'))
     + stages + `<div class="g2">${trend}${comp}</div>` + orgs;
@@ -1630,7 +1633,7 @@ function History() {
   const selectable = c => c.stage === '검수 대기';
   const selN = [...h.sel].filter(tx => rows.some(c => c.tx === tx)).length;
   const th = (k, l) => { const on = h.sort.k === k; return `<th class="sortable ${on ? 'sorted' : ''}" data-act="sort" data-k="${k}" aria-sort="${on ? (h.sort.dir > 0 ? 'ascending' : 'descending') : 'none'}">${l}${ic(on ? (h.sort.dir > 0 ? 'up' : 'down') : 'sortv', 'so')}</th>`; };
-  return PH('인증 결과', '인증 건을 선택하면 고객 상세(인증 결과 · 검수 · 제출서류 · PDF 발급)가 열립니다. 실패 건은 오류코드별 실패 사유를 함께 보여 줍니다.',
+  return PH('인증 결과', '',
     `<button class="btn" data-act="xls">${ic('download')}엑셀 다운로드</button><button class="btn" data-act="xls-raw">${ic('eye')}원문 다운로드</button>`)
   + `<section class="card"><div class="tb">
       <label class="sfield">${ic('search')}<input id="hq" value="${esc(h.q)}" placeholder="이름 · 인증번호 검색 후 Enter"></label>
@@ -1650,7 +1653,7 @@ function History() {
         <td class="num">${c.at.slice(5)}</td><td>${modChips(c)}</td><td class="num">${f || g ? '—' : `${docCount(c)} / ${reqDocs(c).length}`}</td><td>${badge(c.stage)}${g && c.delAt ? `<span class="sub">${c.delAt.slice(5)} 삭제</span>` : ''}${f && FAIL_CODE[c.code] ? `<span class="sub" style="color:var(--bad)">${FAIL_CODE[c.code].t}</span>` : ''}</td><td>${OFFICE[c.office]}</td><td class="mono">${c.acct}</td></tr>`; }).join('')
       : `<tr><td colspan="12"><div class="empty">${ic('search')}<div>조건에 맞는 고객이 없습니다.<br><span style="font-size:12px">기간(${S.range.hist.join(' ~ ')})이나 필터를 바꿔 보세요.</span></div></div></td></tr>`}
     </tbody></table></div>
-    <div class="tf"><span>표시 <b class="num">${rows.length}</b>건 · ${esc(ROLES[S.role].range)}</span><span class="muted">목록에서는 이름·여권번호를 가리고, 고객 상세의 「마스킹 해제」 때만 원문을 보여 줍니다.</span></div></section>`;
+    <div class="tf"><span>표시 <b class="num">${rows.length}</b>건 · ${esc(ROLES[S.role].range)}</span></div></section>`;
 }
 
 /* ---------- C2 고객 상세 ---------- */
@@ -1707,15 +1710,15 @@ function Customer(tx) {
   + `<div class="g2">${Card('인증 결과', `<div class="imgs3" style="margin-bottom:16px"><div><div class="phx">${PH_PASS}</div><div class="phx-cap">여권 이미지</div></div><div><div class="phx">${PH_FACE}</div><div class="phx-cap">여권 얼굴</div></div><div><div class="phx live">${PH_FACE}</div><div class="phx-cap">실시간 얼굴</div></div></div>
       ${f ? failBox(c) : ''}
       <dl class="kv"><dt>성 / 이름</dt><dd>${esc(showName(c).split(' ')[0] || '—')} / ${esc(showName(c).split(' ').slice(1).join(' ') || '—')}</dd><dt>생년월일 · 성별</dt><dd class="num">${um ? c.birth : c.birth.slice(0, 4) + '-••-••'} · ${c.sex}</dd><dt>국적</dt><dd>${c.cc} ${CCN[c.cc]}</dd><dt>여권번호</dt><dd class="mono">${showPass(c)}</dd><dt>발급 · 만료</dt><dd class="num">${c.issueD} · ${c.expD}</dd>
-      <dt>모듈별 결과</dt><dd>${modChips(c)} <span class="muted" style="font-size:12px">안면 일치 기준 80</span></dd></dl>${authLog(c)}`, { sub:'SIGNION 결과 원본 · 수정 불가' })}
-    ${Card('검수', `${c.reviewed ? `<div class="callout info" style="margin-bottom:12px">${ic('check')}<div>검수 완료 · ${c.acct}</div></div>` : '<p class="ink2" style="margin:0 0 10px;font-size:13px">여권 이미지와 정보를 대조한 뒤 검수 완료를 누르세요.</p>'}
+      <dt>모듈별 결과</dt><dd>${modChips(c)} <span class="muted" style="font-size:12px">안면 일치 기준 80</span></dd></dl>${authLog(c)}`)}
+    ${Card('검수', `${c.reviewed ? `<div class="callout info" style="margin-bottom:12px">${ic('check')}<div>검수 완료 · ${c.acct}</div></div>` : ''}
       <div class="fld"><label for="memo">검수 메모</label><textarea class="input" id="memo" style="width:100%" placeholder="예) 이름 철자 원본과 일치">${esc(c.memo)}</textarea></div>
       <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" data-act="memo" data-tx="${c.tx}">메모 저장</button>${f ? '' : `<button class="btn btn-p" data-act="review" data-tx="${c.tx}" ${c.reviewed ? 'disabled' : ''}>${ic('check')}${c.reviewed ? '검수 완료됨' : '검수 완료'}</button>`}</div>
       <div class="sec-t">처리 이력</div>${hist}`)}</div>`
   + (f ? '' : `<div class="g2">${Card('필수 서류', `<div class="docs"><div class="doc"><span class="st ok">${ic('check')}</span><span class="nm">여권 컬러 스캔본<span class="auto-t">자동</span></span><span class="ct">SIGNION 결과</span><span></span></div>${req.map(d => docRow(d, true)).join('')}${docRow('기타', false)}</div>
-      <p class="muted" style="font-size:12.5px;margin:10px 2px 0">항목당 최대 ${MAXF}개 · 파일을 각 행에 끌어다 놓아도 됩니다 · 필수 항목이 모두 차고 검수가 끝나면 「발급 대기」로 넘어갑니다.<br>성공한 업로드 · 재업로드 · 다운로드는 각 1건씩 이번 달 문서 처리 건수에 집계됩니다 (목록 조회 제외 · 미리보기 없음).</p>`, { sub:`필수 ${req.length}종 중 ${dn}종${c.minor ? ' · 미성년 법정대리인 서류 포함' : ''}` })}
+      <p class="muted" style="font-size:12.5px;margin:10px 2px 0">항목당 최대 ${MAXF}개 · 끌어다 놓기 가능</p>`, { sub:`필수 ${req.length}종 중 ${dn}종${c.minor ? ' · 미성년 법정대리인 서류 포함' : ''}` })}
     <div style="display:grid;gap:16px;align-content:start">${IssueCard(c)}
-    ${Card('고객 관리 엑셀', `<p class="ink2" style="margin:0 0 12px;font-size:13px">지정 양식에 여권 정보가 채워진 파일을 내려받아 작성한 뒤 올립니다.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="form-dl" data-tx="${c.tx}">${ic('download')}양식 내려받기</button><button class="btn" data-act="form-up" data-tx="${c.tx}">${ic('upload')}작성본 올리기</button></div><div class="callout warn" style="margin-top:14px">${ic('alert')}<div>양식 세부 항목은 KT·대리점과 협의 후 확정합니다.</div></div>`)}</div></div>`);
+    ${Card('고객 관리 엑셀', `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="form-dl" data-tx="${c.tx}">${ic('download')}양식 내려받기</button><button class="btn" data-act="form-up" data-tx="${c.tx}">${ic('upload')}작성본 올리기</button></div>`)}</div></div>`);
 }
 /* 인증 실패 사유 — 오류코드 기반 */
 function failBox(c) {
@@ -1750,8 +1753,7 @@ function Start() {
   const offs = S.role === 'sub' ? ['vn-hn'] : Object.keys(OFFICE).filter(inScope);
   if (!offs.includes(x.office)) x.office = offs[0];
   x.method = 'here';   /* 고객 휴대폰 진행은 정책 결정 전까지 비활성 */
-  return PH('여권인증', '고객 구분을 입력하고 SIGNION 인증 화면을 엽니다. 결과는 인증 결과 메뉴로 돌아와 고객 상세가 되며, 인증한 관리자가 담당자로 지정됩니다.')
-  + `<div class="callout info" style="margin-bottom:16px">${ic('shieldl')}<div>마스터 · 총괄 · 서브 관리자 모두 같은 기능을 씁니다. 결과가 산출된 인증(성공 · 실패)은 건당 인증료 청구 대상이며, 중도 이탈 · 통신 오류처럼 결과가 없는 요청은 제외됩니다.</div></div>`
+  return PH('여권인증', '')
   + `<div class="g2e">${Card('1. 고객 구분', `<div class="fgrid">${offs.length > 1 ? sel('office', '담당 영업소', offs.map(o => [o, `${OFFICE[o]} 영업소`]), x.office) : ''}${sel('visa', '비자 유형', [['D-2','D-2 유학생'],['D-4','D-4 유학생'],['E-9','E-9 근로자'],['E-7','E-7 근로자']], x.visa)}
       ${sel('minor', '미성년 여부', [[1,'미성년 (법정대리인 서류 3종 추가)', x.visa.startsWith('E')],[0,'성년']], x.visa.startsWith('E') ? 0 : +x.minor)}
       ${sel('cc', '고객 국적', [['VNM','VNM 베트남'],['NPL','NPL 네팔'],['MNG','MNG 몽골']], x.cc)}
@@ -1786,28 +1788,26 @@ function Usage() {
   const months = Object.keys(USE[ag]).filter(k => /^\d{4}-\d{2}$/.test(k)).sort().reverse();
   const ev = UEV.filter(e => e.ag === ag).slice(0, 10);
   const gb = v => (+v).toFixed(2);
-  return PH('이용 현황', `${esc(A.name)} (${A.code}) · ${CUR_M.replace('-', '년 ')}월 현재 · ${S.role === 'head' ? 'KT 헤드마스터 — 전체 대리점 조회' : '다른 대리점 정보는 조회할 수 없습니다'}`, agPick())
+  return PH('이용 현황', `${esc(A.name)} (${A.code}) · ${CUR_M.replace('-', '년 ')}월`, agPick())
   + `<div class="lim-grid">
     ${Card('문서 처리 (이번 달)', meter(s.used, s.L.docs, '건', { overT:'월 한도 도달 · 처리 제한', sub:`<span>업로드 <b>${fmt(u.up)}</b></span><span>재업로드 <b>${fmt(u.reup)}</b></span><span>다운로드 <b>${fmt(u.dl)}</b></span><span>잔여 <b>${fmt(s.docLeft)}</b>건</span>` }), { sub:'성공 건만 · 목록 조회 제외' })}
-    ${Card('동시 보관 용량 (현재)', meter(s.stor, s.L.gb, 'GB', { f:gb, mark:true, overT:'초과 · 업로드/다운로드 차단', sub:`<span>잔여 <b>${s.gbLeft.toFixed(2)}</b>GB</span><span>고객정보 · 제출 문서 · 여권인증 정보 합계</span>` }), { sub:'삭제 · 만료 시 차감' })}
-    ${Card('외부 전송량 (이번 달)', meter(s.xfer, s.L.xfer, 'GB', { f:gb, overT:'초과 · 확장팩 필요', sub:`<span>잔여 <b>${s.xferLeft.toFixed(2)}</b>GB</span><span>문서 다운로드 등 외부로 보낸 데이터</span>` }), { sub:'매월 1일 초기화' })}
+    ${Card('동시 보관 용량 (현재)', meter(s.stor, s.L.gb, 'GB', { f:gb, mark:true, overT:'초과 · 업로드/다운로드 차단', sub:`<span>잔여 <b>${s.gbLeft.toFixed(2)}</b>GB</span>` }), { sub:'삭제 · 만료 시 차감' })}
+    ${Card('외부 전송량 (이번 달)', meter(s.xfer, s.L.xfer, 'GB', { f:gb, overT:'초과 · 확장팩 필요', sub:`<span>잔여 <b>${s.xferLeft.toFixed(2)}</b>GB</span>` }), { sub:'매월 1일 초기화' })}
     ${Card('확장팩 (이번 달)', `<div class="meter"><div class="mt"><b>${s.L.packs}</b><span>팩 적용 중</span><span class="r">${need.n ? badge(`필요 ${need.n}팩`, 'bad') : badge('추가 필요 없음', 'ok')}</span></div>
       <div class="ms"><span>기본 한도 <b>${fmt(A.docLimit)}</b>건 · <b>${A.storGB}</b>GB · 전송 <b>${A.xferGB}</b>GB</span><span>팩 추가 <b>+${fmt(s.L.packs * A.pack.docs)}</b>건 · <b>+${s.L.packs * A.pack.gb}</b>GB · <b>+${s.L.packs * A.pack.xfer}</b>GB</span></div>
       <div style="margin-top:6px">${m ? `<button class="btn ${need.n || s.warn ? 'btn-p' : ''}" data-act="pack-open">${ic('plus')}확장팩 신청</button>` : `<p class="muted" style="margin:0;font-size:12.5px">${S.role === 'head' ? '확장팩은 대리점 마스터가 직접 신청합니다 (KT 승인 절차 없음).' : '확장팩은 마스터 관리자만 신청할 수 있습니다. 한도가 부족하면 마스터 관리자에게 요청하세요.'}</p>`}</div></div>`, { sub:`팩당 ${won(A.pack.price)} · +${fmt(A.pack.docs)}건 · 보관 +${A.pack.gb}GB · 전송 +${A.pack.xfer}GB` })}
   </div>`
-  + `<div class="g2">${Card('월별 문서 처리', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>월</th><th class="n">업로드</th><th class="n">재업로드</th><th class="n">다운로드</th><th class="n">합계</th><th class="n">한도</th><th class="n">외부 전송</th><th class="n">확장팩</th></tr></thead><tbody>${months.map(k => { const x = USE[ag][k], t = x.up + x.reup + x.dl, L = lim(ag, k); return `<tr><td class="num strong">${k}${k === CUR_M ? ' <span class="badge t-info">집계 중</span>' : ''}</td><td class="n num">${fmt(x.up)}</td><td class="n num">${fmt(x.reup)}</td><td class="n num">${fmt(x.dl)}</td><td class="n num strong">${fmt(t)}</td><td class="n num">${fmt(L.docs)}</td><td class="n num">${gb(x.xfer || 0)} / ${L.xfer}GB</td><td class="n num">${L.packs || '—'}</td></tr>`; }).join('')}</tbody></table></div>`, { flush:true, sub:'실패 작업 제외' })}
-    ${Card('필요 팩 산정', `<dl class="kv"><dt>문서 처리 초과분</dt><dd class="num">${fmt(Math.max(0, s.used - s.L.docs))}건 → ${need.byDoc}팩</dd><dt>보관 용량 초과분</dt><dd class="num">${Math.max(0, s.stor - s.L.gb).toFixed(2)}GB → ${need.byGb}팩</dd><dt>외부 전송 초과분</dt><dd class="num">${Math.max(0, s.xfer - s.L.xfer).toFixed(2)}GB → ${need.byXfer}팩</dd><dt>안내 수량</dt><dd><b>${need.n}팩</b> <span class="muted" style="font-size:12px">세 항목 중 가장 큰 수량 · 항목별 따로 청구하지 않음</span></dd></dl>
-      <p class="muted" style="font-size:12.5px;margin:12px 0 0">자동 구매는 없습니다. 마스터가 신청할 때만 적용 · 과금됩니다.</p>`)}</div>`
-  + `<div style="display:grid;gap:16px;margin-bottom:16px">${Card('확장팩 신청 · 적용 이력', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>신청 · 적용 일시</th><th>신청자</th><th class="n">수량</th><th>추가 한도</th><th class="n">청구</th><th>청구월</th></tr></thead><tbody>${PACKS.filter(p => p.ag === ag).slice().reverse().map(p => `<tr><td class="num">${p.at}</td><td class="mono">${p.by}</td><td class="n num">${p.qty}</td><td>+${fmt(p.docs * p.qty)}건 · +${p.gb * p.qty}GB · 전송 +${(p.xfer || 0) * p.qty}GB</td><td class="n num">${won(p.price * p.qty)}</td><td class="num">${p.m}</td></tr>`).join('') || `<tr><td colspan="6"><div class="empty">${ic('coins')}<div>신청 이력이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:'신청 즉시 적용 · 승인 절차 없음' })}
-    ${Card('최근 처리 · 용량 증감', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>일시</th><th>구분</th><th>계정</th><th>대상</th><th class="n">용량</th></tr></thead><tbody>${ev.map(e => `<tr><td class="num">${e.at.slice(5)}</td><td>${e.kind}</td><td class="mono">${e.who}</td><td>${esc(e.target)}</td><td class="n num" style="color:${e.mb < 0 ? 'var(--ok)' : 'inherit'}">${e.mb ? (e.mb > 0 ? '+' : '') + e.mb.toFixed(1) + 'MB' : '—'}</td></tr>`).join('') || `<tr><td colspan="5"><div class="empty">${ic('log')}<div>이벤트가 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:'문서 원본 · 여권정보는 기록하지 않음' })}</div>`
-  + `<div class="callout info">${ic('help')}<div style="flex:1"><b>프로토타입 전용 — 한도 시나리오</b><br>경고 · 차단 · 해제 흐름을 확인합니다. <span class="seg" style="margin-left:8px;vertical-align:middle">${[['ok','정상'],['warn','용량 잔여 10% 이하'],['over','용량 초과'],['full','처리 한도 도달']].map(([k, l]) => `<button data-act="scn" data-s="${k}">${l}</button>`).join('')}</span></div></div>`;
+  + `<div class="g2">${Card('월별 문서 처리', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>월</th><th class="n">업로드</th><th class="n">재업로드</th><th class="n">다운로드</th><th class="n">합계</th><th class="n">한도</th><th class="n">외부 전송</th><th class="n">확장팩</th></tr></thead><tbody>${months.map(k => { const x = USE[ag][k], t = x.up + x.reup + x.dl, L = lim(ag, k); return `<tr><td class="num strong">${k}${k === CUR_M ? ' <span class="badge t-info">집계 중</span>' : ''}</td><td class="n num">${fmt(x.up)}</td><td class="n num">${fmt(x.reup)}</td><td class="n num">${fmt(x.dl)}</td><td class="n num strong">${fmt(t)}</td><td class="n num">${fmt(L.docs)}</td><td class="n num">${gb(x.xfer || 0)} / ${L.xfer}GB</td><td class="n num">${L.packs || '—'}</td></tr>`; }).join('')}</tbody></table></div>`, { flush:true })}
+    ${Card('필요 팩 산정', `<dl class="kv"><dt>문서 처리 초과분</dt><dd class="num">${fmt(Math.max(0, s.used - s.L.docs))}건 → ${need.byDoc}팩</dd><dt>보관 용량 초과분</dt><dd class="num">${Math.max(0, s.stor - s.L.gb).toFixed(2)}GB → ${need.byGb}팩</dd><dt>외부 전송 초과분</dt><dd class="num">${Math.max(0, s.xfer - s.L.xfer).toFixed(2)}GB → ${need.byXfer}팩</dd><dt>안내 수량</dt><dd><b>${need.n}팩</b> <span class="muted" style="font-size:12px">세 항목 중 가장 큰 수량 · 항목별 따로 청구하지 않음</span></dd></dl>`)}</div>`
+  + `<div style="display:grid;gap:16px;margin-bottom:16px">${Card('확장팩 신청 · 적용 이력', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>신청 · 적용 일시</th><th>신청자</th><th class="n">수량</th><th>추가 한도</th><th class="n">청구</th><th>청구월</th></tr></thead><tbody>${PACKS.filter(p => p.ag === ag).slice().reverse().map(p => `<tr><td class="num">${p.at}</td><td class="mono">${p.by}</td><td class="n num">${p.qty}</td><td>+${fmt(p.docs * p.qty)}건 · +${p.gb * p.qty}GB · 전송 +${(p.xfer || 0) * p.qty}GB</td><td class="n num">${won(p.price * p.qty)}</td><td class="num">${p.m}</td></tr>`).join('') || `<tr><td colspan="6"><div class="empty">${ic('coins')}<div>신청 이력이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true })}
+    ${Card('최근 처리 · 용량 증감', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>일시</th><th>구분</th><th>계정</th><th>대상</th><th class="n">용량</th></tr></thead><tbody>${ev.map(e => `<tr><td class="num">${e.at.slice(5)}</td><td>${e.kind}</td><td class="mono">${e.who}</td><td>${esc(e.target)}</td><td class="n num" style="color:${e.mb < 0 ? 'var(--ok)' : 'inherit'}">${e.mb ? (e.mb > 0 ? '+' : '') + e.mb.toFixed(1) + 'MB' : '—'}</td></tr>`).join('') || `<tr><td colspan="5"><div class="empty">${ic('log')}<div>이벤트가 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true })}</div>`;
 }
 
 /* ---------- 계약 · 요금 (적용 조건 조회 · 읽기 전용) ---------- */
 function Contract() {
   const ag = myAg(), A = AG[ag], cnt = lv => ACCTS.filter(x => agOf(x.org) === ag && x.lv === lv).length;
   const daysLeft = diffD(TODAY, A.term[1]);
-  return PH('계약 · 요금', `KT 내부 어드민에서 대리점 ID(${A.code})별로 설정한 조건이 자동 반영됩니다. 고객사에서 임의로 수정할 수 없습니다.`, `${agPick()}${roTag}`)
+  return PH('계약 · 요금', '', `${agPick()}${roTag}`)
   + `<div class="g3">${Card('계약', `<dl class="kv"><dt>대리점</dt><dd>${esc(A.name)} <span class="mono muted">${A.code}</span></dd><dt>계약 기간</dt><dd class="num">${A.term[0]} ~ ${A.term[1]}</dd><dt>남은 기간</dt><dd>${daysLeft > 60 ? `${fmt(daysLeft)}일` : badge(`${daysLeft}일 · 갱신 확인`, 'warn')}</dd><dt>최종 변경</dt><dd class="num">${A.updated}</dd></dl>`)}
     ${Card('월 요금', `<dl class="kv"><dt>플랫폼 월 기본료</dt><dd class="num">${won(A.base)}</dd><dt>여권인증 건당 단가</dt><dd class="num">${won(A.unit)}</dd><dt>월 최소 사용료</dt><dd class="num">${won(A.min)}</dd><dt>인증료 산식</dt><dd>MAX(결과 산출 건수 × 건당 단가, 월 최소 사용료)</dd></dl>`, { sub:'VAT 별도' })}
     ${Card('이용 한도', `<dl class="kv"><dt>문서 월 처리 한도</dt><dd class="num">${fmt(A.docLimit)}건 / 월</dd><dt>동시 보관 용량</dt><dd class="num">${A.storGB}GB</dd><dt>월 외부 전송량</dt><dd class="num">${A.xferGB}GB / 월</dd><dt>집계 기준</dt><dd>업로드 · 재업로드 · 다운로드 각 1건</dd></dl>`)}</div>`
@@ -1825,23 +1825,22 @@ function Settle() {
   const ag = myAg(), A = AG[ag], M = S.month, [y, mm] = M.split('-'), st = statement(ag, M), done = st.st.st === '확정';
   const users = USE_LOG.filter(u => u.ag === ag && u.m === M);
   const head = S.role === 'head' ? Card(`${y}년 ${+mm}월 대리점별 청구`, `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>대리점</th><th>상태</th><th class="n">공급가액</th><th class="n">VAT</th><th class="n">총 청구금액</th></tr></thead><tbody>${Object.values(AG).map(a => { const x = statement(a.id, M); return `<tr data-act="pick-ag" data-ag="${a.id}" class="${a.id === ag ? 'sel' : ''}"><td class="strong">${esc(a.name)} <span class="mono muted">${a.code}</span></td><td>${badge(x.st.st, x.st.st === '확정' ? 'ok' : 'info')}</td><td class="n num">${won(x.supply)}</td><td class="n num">${won(x.vat)}</td><td class="n num strong">${won(x.total)}</td></tr>`; }).join('')}</tbody></table></div>`, { flush:true, style:'margin-bottom:16px', sub:'행을 누르면 그 대리점 정산서를 봅니다' }) : '';
-  return PH('월 이용료', `${esc(A.name)} (${A.code}) · 내부 어드민에서 설정한 계약별 과금조건과 확정된 이용 로그로 산정합니다.`, `${agPick()}${dpBtn('settle', '정산 월')}<button class="btn" data-act="stmt-print">${ic('file')}거래명세서 인쇄</button><button class="btn" data-act="stmt-dl">${ic('download')}정산서 내려받기</button>`)
+  return PH('월 이용료', `${esc(A.name)} (${A.code})`, `${agPick()}${dpBtn('settle', '정산 월')}<button class="btn" data-act="stmt-print">${ic('file')}거래명세서 인쇄</button><button class="btn" data-act="stmt-dl">${ic('download')}정산서 내려받기</button>`)
   + `<div class="kpis">${KPI('공급가액', fmt(st.supply), '원', `${st.rows.length}개 항목`, 'coins', 'hero')}${KPI('부가세 (10%)', fmt(st.vat), '원', '공급가액 × 10%', '')}${KPI('총 청구금액', fmt(st.total), '원', done ? `확정 · ${st.st.at}` : '월 마감 전 예정 금액', 'check')}${KPI('여권인증 (결과 산출)', fmt(st.n), '건', st.minAp ? '월 최소료 적용' : '실사용료 적용', 'scan')}</div>`
   + head
   + Card(`${y}년 ${+mm}월 정산서 ${badge(st.st.st, done ? 'ok' : 'info')}`, `<div class="tbl-wrap"><table class="tbl stmt"><thead><tr><th>구분</th><th>정산 항목</th><th class="n">수량</th><th class="n">적용 단가</th><th class="n">청구금액</th><th>적용 기준 및 비고</th></tr></thead><tbody>
       ${st.rows.map(r => `<tr><td class="g">${r.g}</td><td class="strong">${r.n}</td><td class="n num">${fmt(r.q)}</td><td class="n num">${won(r.u)}</td><td class="n num strong">${won(r.amt)}</td><td class="note">${esc(r.note)}${r.minAp ? ' ' + badge('최소료 적용', 'warn') : ''}</td></tr>`).join('')}
       <tr class="tot"><td></td><td>공급가액</td><td></td><td></td><td class="n num">${won(st.supply)}</td><td></td></tr>
       <tr class="tot"><td></td><td>부가세 (10%)</td><td></td><td></td><td class="n num">${won(st.vat)}</td><td></td></tr>
-      <tr class="tot grand"><td></td><td>총 청구금액</td><td></td><td></td><td class="n num">${won(st.total)}</td><td></td></tr></tbody></table></div>`, { flush:true, style:'margin-bottom:16px', sub:'필수 2개 항목은 매월 · 선택 항목은 과금 발생 월에만 표시' })
+      <tr class="tot grand"><td></td><td>총 청구금액</td><td></td><td></td><td class="n num">${won(st.total)}</td><td></td></tr></tbody></table></div>`, { flush:true, style:'margin-bottom:16px' })
   + modCard(ag, M)
-  + `<div class="g2e">${Card('추가 관리자 계정 과금 근거', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>계정</th><th>위계</th><th>최초 실제 이용</th><th>이용 내용</th><th>현재 상태</th></tr></thead><tbody>${users.map(u => { const ac = ACCTS.find(x => x.id === u.acct); return `<tr><td class="mono">${u.acct}</td><td>${tierB(u.lv)}</td><td class="num">${u.at}</td><td>${esc(u.what)}</td><td>${ac ? badge(ac.status) : badge('삭제됨 · 과금 유지', '')}</td></tr>`; }).join('') || `<tr><td colspan="5"><div class="empty">${ic('users')}<div>이 달에 과금된 추가 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true, sub:'생성 · 로그인만으로는 미과금' })}
-    ${Card('마감 · 정정 이력', `<dl class="kv"><dt>정산 상태</dt><dd>${done ? `월 마감 확정 · ${st.st.at}` : `집계 중 · ${y}년 ${+mm}월 말일 마감 후 확정`}</dd><dt>정정 이력</dt><dd>${st.st.fix.length ? st.st.fix.join('<br>') : '없음'}</dd><dt>확장팩</dt><dd>${packsOf(ag, M).map(p => `${p.at} · ${p.qty}팩 (${p.by})`).join('<br>') || '신청 없음'}</dd></dl>
-      <p class="muted" style="font-size:12.5px;margin:12px 0 0">금액은 내부 어드민의 대리점별 설정값으로 계산합니다. 확정된 정산서의 정정은 KT 내부 어드민에서만 할 수 있습니다.</p>`)}</div>`;
+  + `<div class="g2e">${Card('추가 관리자 계정 과금 근거', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>계정</th><th>위계</th><th>최초 실제 이용</th><th>이용 내용</th><th>현재 상태</th></tr></thead><tbody>${users.map(u => { const ac = ACCTS.find(x => x.id === u.acct); return `<tr><td class="mono">${u.acct}</td><td>${tierB(u.lv)}</td><td class="num">${u.at}</td><td>${esc(u.what)}</td><td>${ac ? badge(ac.status) : badge('삭제됨 · 과금 유지', '')}</td></tr>`; }).join('') || `<tr><td colspan="5"><div class="empty">${ic('users')}<div>이 달에 과금된 추가 계정이 없습니다.</div></div></td></tr>`}</tbody></table></div>`, { flush:true })}
+    ${Card('마감 · 정정 이력', `<dl class="kv"><dt>정산 상태</dt><dd>${done ? `월 마감 확정 · ${st.st.at}` : `집계 중 · ${y}년 ${+mm}월 말일 마감 후 확정`}</dd><dt>정정 이력</dt><dd>${st.st.fix.length ? st.st.fix.join('<br>') : '없음'}</dd><dt>확장팩</dt><dd>${packsOf(ag, M).map(p => `${p.at} · ${p.qty}팩 (${p.by})`).join('<br>') || '신청 없음'}</dd></dl>`)}</div>`;
 }
 /* 모듈별 이용량 · 사용금액 (정산 관리) */
 function modCard(ag, M) { const A = AG[ag], mu = modUse(ag, M), n = AUTHN[ag][M] || 0, use = n * A.unit;
   return Card('모듈별 이용량 · 사용금액', `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>모듈</th><th class="n">호출</th><th class="n">성공</th><th class="n">실패</th><th class="n">성공률</th></tr></thead><tbody>${mu.map(x => `<tr><td class="strong">${x.k}</td><td class="n num">${fmt(x.n)}</td><td class="n num">${fmt(x.ok)}</td><td class="n num">${fmt(x.fail)}</td><td class="n num">${x.n ? (x.ok / x.n * 100).toFixed(1) + '%' : '—'}</td></tr>`).join('')}
-    <tr class="tot"><td>총 인증 건수 (결과 산출)</td><td class="n num">${fmt(n)}</td><td colspan="3" class="note">사용금액 ${fmt(n)}건 × ${won(A.unit)} = <b>${won(use)}</b>${use < A.min ? ` → 월 최소 ${won(A.min)} 청구` : ''}</td></tr></tbody></table></div>`, { flush:true, style:'margin-bottom:16px', sub:'인증 1건 = OCR + 안면인식 · 건당 단가는 인증 1건 기준' }); }
+    <tr class="tot"><td>총 인증 건수 (결과 산출)</td><td class="n num">${fmt(n)}</td><td colspan="3" class="note">사용금액 ${fmt(n)}건 × ${won(A.unit)} = <b>${won(use)}</b>${use < A.min ? ` → 월 최소 ${won(A.min)} 청구` : ''}</td></tr></tbody></table></div>`, { flush:true, style:'margin-bottom:16px' }); }
 /* 거래명세서 — 새 창에 인쇄용 문서를 열고 인쇄 */
 function stmtPrint() {
   const ag = myAg(), A = AG[ag], M = S.month, [y, mm] = M.split('-'), st = statement(ag, M), mu = modUse(ag, M), w = window.open('', '_blank', 'width=860,height=1000');
@@ -1882,11 +1881,8 @@ function Accounts() {
   const g = isG ? genOf(sc) : null;
   const quota = A && !isS ? `<div class="kpis">${(isG ? ['sub'] : ['master','general','sub']).map(lv => { const n = acctN(ag, lv, g), b = basicN(ag, lv, g), p = paidN(ag, lv, g);
       return KPI(`${LV[lv]} 계정${lv === 'sub' && !g ? ` (총괄별 ${A.basic.sub}개)` : ''}`, `${n}`, `/ 기본 ${b}`, p ? `유료 추가 ${p}개 · ${won(A.extra[lv])}/월 (이용 월만)` : `기본 제공 잔여 ${Math.max(0, b - n)}개`, 'users'); }).join('')}</div>` : '';
-  const policy = `<div class="callout info acc-policy" style="margin-bottom:16px">${ic('users')}<div><b>계정 등록 권한</b> — 마스터 → 총괄 관리자 · 소속 직원 / 총괄 → 서브 관리자 · 소속 직원 / 서브 → 소속 영업 직원 / 직원 → 등록 권한 없음. 마스터 계정은 SIGNION 백오피스에서 파트너 등록 시 발급합니다.<br><span class="muted" style="font-size:12.5px">새 계정은 첫 로그인 때 <b>발급한 관리자 메일</b>로 인증번호를 받고, 본인 메일로 바꿔 다시 인증해야 이용할 수 있습니다(직원 포함). 메일을 바꾸면 다시 인증합니다.</span></div></div>`;
-  return PH('계정 관리', isM ? '하위 총괄 관리자와 본사 소속 직원 계정을 등록 · 중지 · 삭제하고, 그 아래 서브 · 직원 계정도 관리합니다. 기본 제공 수량(총괄 3개 · 총괄별 서브 3개)을 넘는 관리자 계정은 유료 추가 계정이며, 그 달 처음 고객정보 · 문서를 조회 · 처리할 때 당월 이용료가 부과됩니다.'
-      : isG ? '소속 영업소의 서브 관리자와 총괄 사무소 소속 직원 계정을 등록 · 수정 · 삭제합니다. 총괄 사무소마다 서브 3개가 기본 제공되고, 넘는 계정은 유료 추가 계정입니다.'
-      : isS ? '영업소 소속 영업 직원 계정을 등록 · 수정 · 중지 · 삭제합니다. 등록한 직원은 이 영업소에 자동으로 연결됩니다.'
-      : '전체 대리점의 관리자 · 직원 계정을 조회합니다 (조회 전용). 마스터 계정은 SIGNION 백오피스에서 발급합니다.',
+  const policy = `<div class="callout info acc-policy" style="margin-bottom:16px">${ic('users')}<div><b>계정 등록 권한</b> — 마스터 → 총괄 관리자 · 소속 직원 / 총괄 → 서브 관리자 · 소속 직원 / 서브 → 소속 영업 직원 / 직원 → 등록 권한 없음</div></div>`;
+  return PH('계정 관리', '',
     next ? `<button class="btn btn-p" data-act="acc-new">${ic('plus')}${isS ? '영업 직원 등록' : '계정 등록'}</button>` : '')
   + policy + quota
   + `<div class="grid-e1">${Card('조직', `<ul class="tree">${draw(rootN)}</ul>`)}
@@ -1926,7 +1922,7 @@ function accNew(lv, keep = {}) {
 function Retention() {
   const edit = S.role === 'master', A = AG[myAg()];
   const due = CUST.filter(c => canSee(c) && !isGone(c) && c.stage !== '인증 실패').map(c => ({ c, until:addD(c.at.slice(0, 10), S.retention) })).filter(x => diffD(TODAY, x.until) <= 7).sort((a, b) => a.until.localeCompare(b.until));
-  return PH('개인정보 보관', '어디에 얼마 동안 두는지 정하고, 기한이 끝나거나 개통이 끝난 고객의 개인정보를 자동으로 지웁니다.')
+  return PH('개인정보 보관', '')
   + `<div class="g3">${Card('보관 장소', `<dl class="kv"><dt>마스터 관리자</dt><dd><b>한국 서버</b>(로드시스템) · 양사 계약 기간까지 (${A ? A.term[1] : '대리점별 계약 종료일'})</dd><dt>총괄 · 서브 관리자</dt><dd><b>클라우드</b> · 마스터 관리자가 지정한 기간까지 (현재 미개통 ${S.retention}일)</dd><dt>백업</dt><dd>매월 1일 전월 데이터를 한국 서버로 백업 후, 클라우드 보관기간이 지난 데이터 삭제</dd><dt>삭제 시</dt><dd>대리점 동시 보관 용량에서 즉시 차감</dd></dl>`, { sub:'고객정보 · 여권인증 정보 · 제출 문서' })}
     ${Card('보관 기간', `<dl class="kv"><dt>운영 · 거래 로그</dt><dd>3년 (개인정보 없음)</dd><dt>개통 완료</dt><dd>즉시 삭제</dd><dt>미개통 (클라우드)</dt><dd>최대 2개월(60일) · <span class="stepper"><button data-act="ret" data-n="-5" ${edit && S.retention > 5 ? '' : 'disabled'} aria-label="5일 줄이기">−</button><input id="retd" value="${S.retention}" inputmode="numeric" ${edit ? '' : 'disabled'} aria-label="미개통 보관 일수"><button data-act="ret" data-n="5" ${edit && S.retention < 60 ? '' : 'disabled'} aria-label="5일 늘리기">+</button></span> 일 후 삭제</dd></dl>
       ${edit ? `<button class="btn btn-sm btn-p" data-act="ret-save" style="margin-top:14px">저장</button>` : '<p class="muted" style="font-size:12.5px;margin:12px 0 0">클라우드 보관기간은 마스터 관리자가 정합니다. 고객사 요구나 법적 근거가 있으면 KT와 협의해 조정합니다.</p>'}`)}
@@ -1942,7 +1938,7 @@ function Logs() {
     && (!f.kind || LOG_KIND[f.kind].test(l.act)) && (!f.acct || l.id === f.acct) && (!f.ip || l.ip.includes(f.ip)));
   const accts = [...new Set(LOGS.filter(logOk).map(l => l.id))];
   const tone = act => /실패|잠금$/.test(act) ? 'bad' : /해제|삭제|원문/.test(act) ? 'warn' : '';
-  return PH('관리자 사용 로그', '누가 언제 어디서 무엇을 했는지 남깁니다. 로그는 고칠 수도 지울 수도 없고, 개인정보 대신 인증번호만 기록합니다.')
+  return PH('관리자 사용 로그', '')
   + `<section class="card"><div class="tb">${dpBtn('logs', '로그 기간')}
       <select class="select" data-lf="kind" aria-label="행위"><option value="">행위 전체</option>${Object.keys(LOG_KIND).map(k => `<option ${f.kind === k ? 'selected' : ''}>${k}</option>`).join('')}</select>
       <select class="select" data-lf="acct" aria-label="계정"><option value="">계정 전체</option>${accts.map(k => `<option ${f.acct === k ? 'selected' : ''}>${k}</option>`).join('')}</select>
@@ -2088,7 +2084,7 @@ function addFiles(tx, d, files) {
   const c = custBy(tx); if (!c || !files.length) return;
   const ag = agOf(c.office); if (!docGuard(ag, 'up')) return;
   const list = (c.files[d] ||= []), room = Math.min(MAXF - list.length, agState(ag).docLeft), ok = files.slice(0, room);
-  ok.forEach(f => { list.push(f.name); countDoc(ag, 'up', `${tx} · ${d}`, +(f.size ? f.size / 1048576 : 1.2).toFixed(1)); }); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `${d} ${ok.length}건 업로드`, me().id]); addLog('서류 업로드', `${tx} · ${d} ${ok.length}건`);
+  ok.forEach(f => { list.push(f.name); countDoc(ag, 'up', `${tx} · ${d}`, +(f.size ? f.size / 1048576 : 1.2).toFixed(1)); }); docsDone(c); addLog('서류 업로드', `${tx} · ${d} ${ok.length}건`);
   const before = c.stage; recalc(c); render();
   toast(files.length > room ? `항목당 최대 ${MAXF}개 · 남은 월 처리 한도 안에서만 올립니다 — ${files.length - room}개는 제외했습니다.` : before !== c.stage ? `${d} 업로드 · 단계가 「${c.stage}」(으)로 바뀌었습니다.` : `${d} ${ok.length}건 업로드 완료`, files.length > room);
 }
@@ -2144,7 +2140,7 @@ document.addEventListener('click', e => {
     case 'hck': e.stopPropagation(); a.checked ? H.sel.add(a.dataset.tx) : H.sel.delete(a.dataset.tx); render(); break;
     case 'hck-all': { e.stopPropagation(); const rows = histRows(false).filter(c => c.stage === '검수 대기'); if (a.checked) rows.forEach(c => H.sel.add(c.tx)); else rows.forEach(c => H.sel.delete(c.tx)); render(); break; }
     case 'open-c': if (e.target.closest('.ck')) return; location.hash = '#/customer/' + a.dataset.tx; break;
-    case 'review-sel': { const list = [...H.sel].map(custBy).filter(c => c && c.stage === '검수 대기'); list.forEach(c => { c.reviewed = true; recalc(c); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '검수 완료 (일괄)', me().id]); }); addLog('검수 완료', `${list.length}건 일괄`); H.sel.clear(); render(); toast(`${list.length}건을 검수 완료했습니다 · 서류가 모자란 고객은 「서류 보완」으로 이동`); break; }
+    case 'review-sel': { const list = [...H.sel].map(custBy).filter(c => c && c.stage === '검수 대기'); list.forEach(c => { c.reviewed = true; recalc(c); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '검수 완료', me().id]); }); addLog('검수 완료', `${list.length}건 일괄`); H.sel.clear(); render(); toast(`${list.length}건을 검수 완료했습니다 · 서류가 모자란 고객은 「서류 보완」으로 이동`); break; }
     case 'xls': { const rows = histRows(false); downloadCSV(`여권인증이력_${TODAY}.csv`, [['인증번호','이름','국적','비자','미성년','여권번호','인증 일시','OCR','안면 점수','라이브니스','서류','단계','영업소','등록 계정'], ...rows.map(c => [c.tx, isGone(c) ? '삭제됨' : maskName(c.name), c.cc, c.visa, c.minor ? 'Y' : '', isGone(c) ? '' : c.pmask, c.at, c.ocr ? 'Y' : 'N', c.score ?? '', c.liv == null ? '' : c.liv ? 'Y' : 'N', `${docCount(c)}/${reqDocs(c).length}`, c.stage, OFFICE[c.office], c.acct])]); addLog('엑셀 다운로드', `여권인증 이력 · ${rows.length}건 · 마스킹 유지`); toast(`${rows.length}건을 내려받았습니다 (마스킹 유지)`); break; }
     case 'xls-raw': openModal(MH('원문 다운로드', '이름·여권번호 원문이 포함됩니다. 사유와 함께 사용 로그에 기록됩니다.') + `<div class="m-b"><div class="fld"><label for="rsn">다운로드 사유<span class="req">*</span></label><textarea class="input" id="rsn" style="width:100%" placeholder="예) KT 개통 서류 대조"></textarea></div></div>` + okBtns('원문 다운로드'), () => {
         const r = $('#rsn').value.trim(); if (!r) { $('#rsn').focus(); return; } const rows = histRows(false).filter(c => !isGone(c));
@@ -2152,7 +2148,7 @@ document.addEventListener('click', e => {
     /* customer */
     case 'unmask': { const tx = a.dataset.tx; S.unmask[tx] = !S.unmask[tx]; if (S.unmask[tx]) addLog('개인정보 마스킹 해제', `${tx}`); render(); if (S.unmask[tx]) toast('원문을 표시했습니다 · 열람 기록이 사용 로그에 남았습니다'); break; }
     case 'memo': { const c = custBy(a.dataset.tx); c.memo = $('#memo').value; toast('검수 메모를 저장했습니다.'); break; }
-    case 'review': { const c = custBy(a.dataset.tx); c.memo = $('#memo').value; c.reviewed = true; recalc(c); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '검수 완료' + (c.memo ? ` · ${c.memo}` : ''), me().id]); addLog('검수 완료', c.tx); render(); toast(`검수 완료 · 단계: ${c.stage}`); break; }
+    case 'review': { const c = custBy(a.dataset.tx); c.memo = $('#memo').value; c.reviewed = true; recalc(c); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '검수 완료', me().id]); addLog('검수 완료', c.tx); render(); toast(`검수 완료 · 단계: ${c.stage}`); break; }
     case 'up': { const c = custBy(a.dataset.tx); if (!docGuard(agOf(c.office), 'up')) break; UP = [a.dataset.tx, a.dataset.d]; $('#fpick').value = ''; $('#fpick').click(); break; }
     case 'reup': { e.stopPropagation(); const c = custBy(a.dataset.tx); if (!docGuard(agOf(c.office), 'reup')) break; UP = [a.dataset.tx, a.dataset.d, +a.dataset.i]; $('#fpick').value = ''; $('#fpick').click(); break; }
     case 'dl': { e.stopPropagation(); const c = custBy(a.dataset.tx), ag = agOf(c.office); if (!docGuard(ag, 'dl')) break; countDoc(ag, 'dl', `${c.tx} · ${a.dataset.n}`); addLog('서류 다운로드', `${c.tx} · ${a.dataset.n}`); render(); toast(`${a.dataset.n} 내려받기 · 문서 처리 1건 집계`); break; }
@@ -2161,21 +2157,21 @@ document.addEventListener('click', e => {
     case 'form-up': UP = [a.dataset.tx, '__form']; $('#fpick').value = ''; $('#fpick').click(); break;
     case 'done': { const c = custBy(a.dataset.tx); openModal(MH('개통 완료로 처리할까요?', `${c.tx} · ${esc(maskName(c.name))}`) + `<div class="m-b"><div class="callout bad">${ic('alert')}<div>여권 정보, 이미지 3장, 업로드 서류 ${Object.values(c.files).flat().length}개가 <b>즉시 삭제</b>되고 되돌릴 수 없습니다. 인증번호와 처리 이력(개인정보 없음)만 남습니다.</div></div><label class="switch" style="margin-top:14px"><input type="checkbox" id="ack">삭제 내용을 확인했습니다.</label></div>` + okBtns('개통 완료 · 삭제', true), () => {
         if (!$('#ack').checked) { toast('삭제 내용 확인에 체크하세요.', true); return; } const nf = Object.values(c.files).flat().length, mb = +(nf * 1.2 + 3.4).toFixed(1), ag = agOf(c.office); USE[ag].stor = Math.max(0, +(USE[ag].stor - mb / 1024).toFixed(4)); UEV.unshift({ at:nowDT(), ag, kind:'삭제', who:me().id, target:`${c.tx} · 개통 완료 즉시 삭제`, mb:-mb });
-        c.stage = '개통 완료 · 삭제'; c.name = ''; c.pmask = ''; c.pfull = ''; c.files = {}; c.delAt = `${TODAY} ${nowT().slice(0, 5)}`; delete S.unmask[c.tx]; c.hist.unshift([c.delAt.slice(5), '개통 완료 · 개인정보 즉시 삭제', me().id]); addLog('개통 완료', `${c.tx} · 개인정보 즉시 삭제`); closeModal(); render(); toast(`개통 완료 · 개인정보를 삭제했습니다 (보관 용량 ${mb}MB 차감)`); }); break; }
+        c.stage = '개통 완료 · 삭제'; c.name = ''; c.pmask = ''; c.pfull = ''; c.files = {}; c.delAt = `${TODAY} ${nowT().slice(0, 5)}`; delete S.unmask[c.tx]; c.hist.unshift([c.delAt.slice(5), '개통 완료', me().id]); addLog('개통 완료', `${c.tx} · 개인정보 즉시 삭제`); closeModal(); render(); toast(`개통 완료 · 개인정보를 삭제했습니다 (보관 용량 ${mb}MB 차감)`); }); break; }
     /* start */
     case 'method': S.c3.method = a.dataset.m; render(); break;
     case 'alog': S.alog = S.alog === a.dataset.tx ? null : a.dataset.tx; render(); break;
     case 'start': { if (S.c3.method === 'qr') { toast('고객 휴대폰 진행은 정책 결정 후 활성화됩니다.', true); break; }
       try { window.open('https://auth.signion.net/', '_blank', 'noopener'); } catch (e) {}
       const x = S.c3, n = 419 + S.pending.length, tx = `TX-1103-0${n}`;
-      const c = { tx, name:pick(POOL[x.cc]), cc:x.cc, visa:x.visa, minor:!x.visa.startsWith('E') && x.minor, office:x.office, at:`${TODAY} ${nowT().slice(0, 5)}`, ocr:1, score:null, liv:null, reviewed:false, stage:'인증 진행 중', acct:me().id, pmask:'', pfull:'', code:'', delAt:'', files:{}, memo:'', hist:[[`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '여권인증 시작 · 고객번호 발급', me().id]], birth:'2008-05-14', sex:'F', issueD:'2023-02-10', expD:'2033-02-10' };
+      const c = { tx, name:pick(POOL[x.cc]), cc:x.cc, visa:x.visa, minor:!x.visa.startsWith('E') && x.minor, office:x.office, at:`${TODAY} ${nowT().slice(0, 5)}`, ocr:1, score:null, liv:null, reviewed:false, stage:'인증 진행 중', acct:me().id, pmask:'', pfull:'', code:'', delAt:'', files:{}, memo:'', hist:[[`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '여권 인증 시작', me().id]], birth:'2008-05-14', sex:'F', issueD:'2023-02-10', expD:'2033-02-10' };
       S.pending.unshift(c); addLog('여권인증 시작', tx); render(); toast(`고객번호 ${tx} 발급 · auth.signion.net 인증 화면으로 이동합니다`);
-      setTimeout(() => { S.pending.splice(S.pending.indexOf(c), 1); Object.assign(c, { score:+(88 + Math.random() * 8).toFixed(1), liv:1, stage:'검수 대기', pmask:`${PFX[c.cc]}${ri(10, 99)}••••${ri(10, 99)}` }); c.pfull = c.pmask.replace('••••', '5521'); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, 'SIGNION 결과 수신 · 성공', 'system']); CUST.unshift(c); const ag = agOf(c.office); AUTHN[ag][CUR_M] = (AUTHN[ag][CUR_M] || 0) + 1; addLog('여권인증 결과 수신', `${tx} · 성공 · 인증료 청구 대상 1건`); if (['start','history'].includes(route().split('/')[0])) render(); toast(`${tx} 결과 수신 · 성공 → 검수 대기`); }, 4000);
+      setTimeout(() => { S.pending.splice(S.pending.indexOf(c), 1); Object.assign(c, { score:+(88 + Math.random() * 8).toFixed(1), liv:1, stage:'검수 대기', pmask:`${PFX[c.cc]}${ri(10, 99)}••••${ri(10, 99)}` }); c.pfull = c.pmask.replace('••••', '5521'); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, '여권 인증 완료', 'system']); CUST.unshift(c); const ag = agOf(c.office); AUTHN[ag][CUR_M] = (AUTHN[ag][CUR_M] || 0) + 1; addLog('여권인증 결과 수신', `${tx} · 성공 · 인증료 청구 대상 1건`); if (['start','history'].includes(route().split('/')[0])) render(); toast(`${tx} 결과 수신 · 성공 → 검수 대기`); }, 4000);
       break; }
     /* issue */
     case 'mv': { const o = S.order, i = o.indexOf(a.dataset.d), cur = $$('#ord li').map(li => li.dataset.od); const j = o.indexOf(cur[cur.indexOf(a.dataset.d) + +a.dataset.dir]); [o[i], o[j]] = [o[j], o[i]]; render(); break; }
     case 'tok': { const inp = $('#fname'), p = inp.selectionStart ?? inp.value.length; inp.value = inp.value.slice(0, p) + a.dataset.t + inp.value.slice(inp.selectionEnd ?? p); inp.dispatchEvent(new Event('input')); inp.focus(); break; }
-    case 'issue': { const c = custBy(a.dataset.tx), fn = fileName(c), pages = issuePages(c), ag = agOf(c.office); if (!docGuard(ag, 'dl')) break; countDoc(ag, 'dl', `${c.tx} · 제출서류 PDF ${pages}쪽`); if (c.stage === '발급 대기') c.stage = '개통 대기'; c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `KT 제출 서류 PDF 발급 · ${pages}쪽`, me().id]); addLog('제출 서류 발급', `${c.tx} · PDF ${pages}쪽`); render(); toast(`${fn} (${pages}쪽) 발급 · 다운로드 1건 집계${c.stage === '개통 대기' ? ' · 단계: 개통 대기' : ''}`); break; }
+    case 'issue': { const c = custBy(a.dataset.tx), fn = fileName(c), pages = issuePages(c), ag = agOf(c.office); if (!docGuard(ag, 'dl')) break; countDoc(ag, 'dl', `${c.tx} · 제출서류 PDF ${pages}쪽`); if (c.stage === '발급 대기') c.stage = '개통 대기'; c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, 'PDF 발급 완료', me().id]); addLog('제출 서류 발급', `${c.tx} · PDF ${pages}쪽`); render(); toast(`${fn} (${pages}쪽) 발급 · 다운로드 1건 집계${c.stage === '개통 대기' ? ' · 단계: 개통 대기' : ''}`); break; }
     case 'goto-issue': $('#issue-card')?.scrollIntoView({ behavior:'smooth', block:'start' }); break;
     /* accounts */
     case 'tree': S.tree = a.dataset.o; render(); break;
@@ -2205,7 +2201,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'fpick' && UP) { const [tx, d, ri0] = UP; UP = null;
-    if (ri0 != null) { const c = custBy(tx), f = t.files[0], ag = agOf(c.office); if (!f || !docGuard(ag, 'reup')) return; const old = c.files[d][ri0], mb = +(f.size / 1048576).toFixed(1); c.files[d][ri0] = f.name; countDoc(ag, 'reup', `${tx} · ${d}`, mb - 1.2); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `${d} 재업로드 · ${old} → ${f.name}`, me().id]); addLog('서류 재업로드', `${tx} · ${d}`); render(); toast(`${d} 재업로드 완료 · 문서 처리 1건 집계`); return; } if (d === '__form') { const c = custBy(tx); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `고객 관리 엑셀 작성본 업로드 · ${t.files[0]?.name || ''}`, me().id]); addLog('서류 업로드', `${tx} · 고객 관리 엑셀`); render(); toast('작성본을 고객 레코드에 붙였습니다.'); } else addFiles(tx, d, [...t.files]); return; }
+    if (ri0 != null) { const c = custBy(tx), f = t.files[0], ag = agOf(c.office); if (!f || !docGuard(ag, 'reup')) return; const old = c.files[d][ri0], mb = +(f.size / 1048576).toFixed(1); c.files[d][ri0] = f.name; countDoc(ag, 'reup', `${tx} · ${d}`, mb - 1.2);  addLog('서류 재업로드', `${tx} · ${d}`); render(); toast(`${d} 재업로드 완료 · 문서 처리 1건 집계`); return; } if (d === '__form') { const c = custBy(tx); c.hist.unshift([`${TODAY.slice(5)} ${nowT().slice(0, 5)}`, `고객 관리 엑셀 작성본 업로드 · ${t.files[0]?.name || ''}`, me().id]); addLog('서류 업로드', `${tx} · 고객 관리 엑셀`); render(); toast('작성본을 고객 레코드에 붙였습니다.'); } else addFiles(tx, d, [...t.files]); return; }
   if (t.id === 'agSel') { S.ag = t.value; render(); return; }
   if (t.matches('[data-f]')) { S.hist[t.dataset.f] = t.value; S.hist.sel.clear(); render(); }
   if (t.matches('select[data-lf]')) { S.logs[t.dataset.lf] = t.value; render(); }
